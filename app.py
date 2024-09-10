@@ -1,1 +1,3 @@
-print("Hello World,This is Team-2")
+import streamlit as st
+
+st.title("Hello World! - Team 2")

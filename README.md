@@ -33,7 +33,7 @@ cd csusb_fall2024_cse6550_team2
 Make sure Docker is installed and running on your machine. Build the Docker image using the following command:
 
 ```
-docker build -t academicadvisor .
+docker build -t se-pro-team2 .
 ```
 
 ### Step 4: Run the Docker Container
@@ -41,7 +41,7 @@ docker build -t academicadvisor .
 Run the Docker container to start the application. Use the command below:
 
 ```
-docker run -p 5002:8501 academicadvisor
+docker run -p 5002:5002 -p 8888:8888 se-pro-team2
 ```
 
 You can access the application at:
