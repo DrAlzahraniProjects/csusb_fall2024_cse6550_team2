@@ -21,4 +21,4 @@ COPY . .
 EXPOSE 5002
 
 # Run the application (Python file)
-CMD ["micromamba", "run", "-n", "myenv", "python", "app.py"]
+CMD ["micromamba", "run", "-n", "myenv", "streamlit", "run", "app.py", "--server.port=5002"]
