@@ -1,37 +1,42 @@
-# Use the official Python image from the Docker Hub
-FROM python:3.9-slim
+# Use the official Python image from the Docker Hub that supports multiple architectures
+FROM --platform=linux/arm64/v8,linux/amd64 python:3.9-slim
 
 # Set the working directory
 WORKDIR /app
 
-# Install Miniconda
-RUN apt-get update && apt-get install -y wget \
-    && wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
-    && bash Miniconda3-latest-Linux-x86_64.sh -b \
-    && rm Miniconda3-latest-Linux-x86_64.sh \
-    && apt-get clean
+# Install dependencies
+RUN apt-get update && apt-get install -y wget bzip2 && apt-get clean
+
+# Download and install Miniconda for the appropriate architecture
+ARG TARGETARCH
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+        wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh -O Miniconda.sh; \
+    else \
+        wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O Miniconda.sh; \
+    fi \
+    && bash Miniconda.sh -b -p /opt/miniconda \
+    && rm Miniconda.sh
+
+# Add conda to the PATH
+ENV PATH="/opt/miniconda/bin:$PATH"
 
 # Install Mamba using Miniconda
-RUN /root/miniconda3/bin/conda install mamba -c conda-forge
+RUN conda install mamba -n base -c conda-forge
 
 # Create a new environment with Python 3.11
-RUN /root/miniconda3/bin/mamba create -n team2_env python=3.11 -y
+RUN mamba create -n team2_env python=3.11 -y
 
 # Set environment path
-ENV PATH="/root/miniconda3/envs/team2_env/bin:$PATH"
-
-# Activate the environment and install packages from requirements.txt
-SHELL ["/bin/bash", "-c"]
-RUN echo "source /root/miniconda3/bin/activate team2_env" >> ~/.bashrc
+ENV PATH="/opt/miniconda/envs/team2_env/bin:$PATH"
 
 # Copy requirements.txt into the container
 COPY requirements.txt /app/requirements.txt
 
 # Install Python packages from requirements.txt
-RUN /bin/bash -c "source ~/.bashrc && mamba install --yes --file /app/requirements.txt && mamba clean --all -f -y"
+RUN mamba install --yes --file /app/requirements.txt && mamba clean --all -f -y
 
 # Install Jupyter Notebook
-RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge jupyter"
+RUN mamba install -c conda-forge jupyter
 
 # Copy the current directory contents into the container
 COPY . /app
