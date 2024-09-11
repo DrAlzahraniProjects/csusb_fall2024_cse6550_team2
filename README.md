@@ -38,6 +38,8 @@ docker build -t se-pro-team2 .
 
 ### Step 4: Run the Docker Container
 
+**Windows** - Make sure Docker Desktop application is open in your local machine
+
 Run the Docker container to start the application. Use the command below:
 
 ```
