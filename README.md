@@ -33,7 +33,7 @@ cd csusb_fall2024_cse6550_team2
 Make sure Docker is installed and running on your machine. Build the Docker image using the following command:
 
 ```
-docker build -t se-pro-team2 .
+docker build -t team2-app .
 ```
 
 ### Step 4: Run the Docker Container
@@ -43,7 +43,7 @@ docker build -t se-pro-team2 .
 Run the Docker container to start the application. Use the command below:
 
 ```
-docker run -p 5002:5002 -p 8888:8888 se-pro-team2
+docker run -p 5002:5002 -p 8888:8888 team2-app
 ```
 
 You can access the application at:
