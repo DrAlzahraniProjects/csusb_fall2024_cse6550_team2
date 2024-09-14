@@ -37,12 +37,19 @@ RUN /bin/bash -c "source ~/.bashrc && mamba install --yes --file /app/requiremen
 # Install Jupyter Notebook
 RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge jupyter"
 
+# Install NGINX
+RUN apt-get update && apt-get install -y nginx
+
+# Copy NGINX config
+COPY nginx.conf /etc/nginx/nginx.conf
+
 # Copy the current directory contents into the container
 COPY . /app
 
-# Expose ports for Streamlit and Jupyter
+# Expose ports for NGINX, Streamlit, and Jupyter
+EXPOSE 80
 EXPOSE 5002
 EXPOSE 8888
 
-# Start both Streamlit and Jupyter
-CMD ["sh", "-c", "streamlit run app.py --server.port=5002 & jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root"]
+# Start NGINX, Streamlit, and Jupyter
+CMD service nginx start && streamlit run app.py --server.port=5002 & jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
