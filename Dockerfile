@@ -4,24 +4,29 @@ FROM python:3.9-slim
 # Set the working directory
 WORKDIR /app
 
-# Install Miniconda
-RUN apt-get update && apt-get install -y wget \
-    && if [ "$(uname -m)" = "aarch64" ]; then \
-           wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh -O miniconda.sh; \
-       else \
-           wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh; \
-       fi \
-    && bash miniconda.sh -b \
-    && rm miniconda.sh \
-    && apt-get clean   
+# Install dependencies
+RUN apt-get update && apt-get install -y wget
 
-# Install Mamba using Miniconda
-RUN /root/miniconda3/bin/conda install mamba -c conda-forge
+# Determine system architecture and install the corresponding version of Miniconda
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh; \
+    elif [ "$ARCH" = "aarch64" ]; then \
+        wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh; \
+    else \
+        echo "Unsupported architecture: $ARCH" && exit 1; \
+    fi && \
+    bash Miniconda3-latest-Linux-*.sh -b && \
+    ls -la /root/miniconda3 && \
+    rm Miniconda3-latest-Linux-*.sh && \
+    apt-get clean
 
-# Create a new environment with Python 3.11
-RUN /root/miniconda3/bin/mamba create -n team2_env python=3.11 -y
+# Install Mamba using Miniconda and create a new environment with Python 3.11
+RUN /root/miniconda3/bin/conda install mamba -c conda-forge -y \
+    && /root/miniconda3/bin/mamba create -n team2_env python=3.11 -y \
+    && /root/miniconda3/bin/mamba clean --all -f -y
 
-# Set environment path
+# Set environment path to use team2_env and ensure bash is used
 ENV PATH="/root/miniconda3/envs/team2_env/bin:$PATH"
 
 # Activate the environment and install packages from requirements.txt
