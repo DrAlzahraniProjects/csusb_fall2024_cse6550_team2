@@ -28,7 +28,15 @@ Once the repository is cloned, navigate to the project directory:
 cd csusb_fall2024_cse6550_team2
 ```
 
-### Step 3: Build the Docker Image
+### Step 3: Update the Local Repository
+
+Ensure your local repository is up-to-date by running:
+
+```
+git pull origin main
+```
+
+### Step 4: Build the Docker Image
 
 Make sure Docker is installed and running on your machine. Build the Docker image using the following command:
 
@@ -36,7 +44,7 @@ Make sure Docker is installed and running on your machine. Build the Docker imag
 docker build -t team2-app .
 ```
 
-### Step 4: Run the Docker Container
+### Step 5: Run the Docker Container
 
 **Windows** - Make sure Docker Desktop application is open in your local machine
 
