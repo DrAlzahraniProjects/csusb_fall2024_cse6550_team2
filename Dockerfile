@@ -5,7 +5,7 @@ FROM python:3.9-slim
 WORKDIR /app
 
 # Install dependencies
-RUN apt-get update && apt-get install -y wget
+RUN apt-get update && apt-get install -y wget curl openjdk-11-jdk-headless zaproxy
 
 # Determine system architecture and install the corresponding version of Miniconda
 RUN ARCH=$(uname -m) && \
@@ -45,6 +45,20 @@ RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge jupyter"
 # Install NGINX
 RUN apt-get update && apt-get install -y nginx
 
+# Install Mistral (from Hugging Face)
+RUN /bin/bash -c "source ~/.bashrc && pip install mistral-client"
+
+# Install Milvus (client)
+RUN /bin/bash -c "source ~/.bashrc && pip install pymilvus"
+
+# Install Milvus (server installation)
+RUN wget https://github.com/milvus-io/milvus/releases/download/v2.3.1/milvus-standalone-docker-compose.yml \
+    && docker-compose -f milvus-standalone-docker-compose.yml up -d
+
+# Optional: Install Burp Suite (Community Edition)
+RUN wget https://portswigger.net/burp/releases/download?product=community&version=2023.7&type=Linux -O burp.sh \
+    && chmod +x burp.sh \
+    && ./burp.sh
 # Copy NGINX config
 COPY nginx.conf /etc/nginx/nginx.conf
 
@@ -52,9 +66,15 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY . /app
 
 # Expose ports for NGINX, Streamlit, and Jupyter
+# Milvus default port 19530
+# ZAP 8080
+# Mistral(Sample port) 8000
 EXPOSE 80
 EXPOSE 5002
 EXPOSE 8888
+EXPOSE 19530   
+EXPOSE 8080   
+EXPOSE 8000
 
 # Start NGINX, Streamlit, and Jupyter
 CMD service nginx start && streamlit run app.py --server.port=5002 && jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
