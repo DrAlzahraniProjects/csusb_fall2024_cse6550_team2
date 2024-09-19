@@ -56,5 +56,8 @@ EXPOSE 80
 EXPOSE 5002
 EXPOSE 8888
 
+# Install NeMo Toolkit (with NLP) and its dependencies
+RUN /bin/bash -c "source ~/.bashrc && pip install nemo_toolkit[nlp] transformers pytorch-lightning==2.0.7"
+
 # Start NGINX, Streamlit, and Jupyter
 CMD service nginx start && streamlit run app.py --server.port=5002 && jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
