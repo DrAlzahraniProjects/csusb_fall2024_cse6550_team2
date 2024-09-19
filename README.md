@@ -44,7 +44,7 @@ Make sure Docker is installed and running on your machine. Build the Docker imag
 docker build -t team2-app .
 ```
 
-### Step 5: Run the Docker Container
+### Step 5: Run the Docker Container.
 
 **Windows** - Make sure Docker Desktop application is open in your local machine
 
