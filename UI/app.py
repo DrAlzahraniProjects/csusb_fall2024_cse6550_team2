@@ -1,7 +1,5 @@
 import streamlit as st
 
-# st.title("Hello World! - Team 2")
-
 # Function for chatbot responses
 def chatbot_response(user_input):
     responses = {
@@ -30,8 +28,8 @@ def process_input():
     
     # Clear the input field after processing
     st.session_state['user_input'] = ''
-# Sidebar for additional options (e.g., navigation or tips)
 
+# Sidebar for additional options
 st.sidebar.title("Academic Chatbot")
 st.sidebar.markdown("**Features:**")
 st.sidebar.markdown("- Ask about academic advice")
@@ -47,16 +45,13 @@ st.title("Academic Advisor Chatbot")
 if 'conversation' not in st.session_state:
     st.session_state['conversation'] = []
 
-
 # Display conversation history
 st.subheader("Conversation History")
 for message in st.session_state['conversation']:
     if message['role'] == 'user':
-        st.markdown(f"**You:** {message['content']}")
+        st.markdown(f'<div style="text-align: right;"> {message["content"]}</div>', unsafe_allow_html=True)
     else:
-        st.markdown(f"**Bot:** {message['content']}")
-
-st.subheader("Chatbot")
+        st.markdown(f'<div style="text-align: left;"> {message["content"]}</div>', unsafe_allow_html=True)
 
 # Input for user message
 user_input = st.text_input("You: ", key="user_input", placeholder="Ask me anything academic...", on_change=process_input)
@@ -75,15 +70,7 @@ with feedback_col3:
 
 # Process user input and display bot response
 if user_input:
-    # Append user input to conversation
-    st.session_state['conversation'].append({"role": "user", "content": user_input})
-    
-    # Generate and display bot response
-    bot_reply = chatbot_response(user_input)
-    st.session_state['conversation'].append({"role": "bot", "content": bot_reply})
-    
-    # Rerun to update the conversation and clear input
-    st.experimental_rerun()
+    process_input()  # This will handle the conversation update
 
 # Handle button interactions (optional)
 if like_button:
@@ -94,4 +81,3 @@ if dislike_button:
     
 if copy_button:
     st.info("Response copied to clipboard!")
-
