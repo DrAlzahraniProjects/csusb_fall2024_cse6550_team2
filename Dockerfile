@@ -49,7 +49,7 @@ RUN apt-get update && apt-get install -y nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copy the current directory contents into the container
-COPY . /app
+COPY UI/ .
 
 # Expose ports for NGINX, Streamlit, and Jupyter
 EXPOSE 80
