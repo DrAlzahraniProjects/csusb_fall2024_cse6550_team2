@@ -153,6 +153,10 @@ with st.sidebar.expander("Response time analysis"):
 with st.sidebar.expander("Accuracy rate"):
     st.write("Details go here...")
 
+# Common topics or keywords
+with st.sidebar.expander("Common topics or keywords"):
+    st.write("Details go here...")
+
 # Placeholder for the animated title
 if 'title_placeholder' not in st.session_state:
     st.session_state['title_placeholder'] = st.empty()
