@@ -164,6 +164,10 @@ with st.sidebar.expander("User satisfaction ratings"):
 # Improvement over time
 with st.sidebar.expander("Improvement over time"):
     st.write("Details go here...")
+    
+# Feedback summary
+with st.sidebar.expander("Feedback summary"):
+    st.write("Details go here...")
 
 # Placeholder for the animated title
 if 'title_placeholder' not in st.session_state:
