@@ -7,7 +7,7 @@ WORKDIR /app
 # Install dependencies
 RUN apt-get update && apt-get install -y wget
 
-# Determine system architecture and install the corresponding version of Miniconda
+# Determine system architecture and we will install the corresponding version of Miniconda
 RUN ARCH=$(uname -m) && \
     if [ "$ARCH" = "x86_64" ]; then \
         wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh; \
