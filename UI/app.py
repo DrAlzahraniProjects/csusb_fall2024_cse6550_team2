@@ -172,10 +172,6 @@ with st.sidebar.expander("Improvement over time"):
 with st.sidebar.expander("Feedback summary"):
     st.write("Details go here...")
 
-# Statistics per day and overall
-with st.sidebar.expander("Statistics per day and overall"):
-    st.write("Details go here...")
-
 # Placeholder for the animated title
 if 'title_placeholder' not in st.session_state:
     st.session_state['title_placeholder'] = st.empty()
