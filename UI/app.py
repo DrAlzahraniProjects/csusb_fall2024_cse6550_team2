@@ -161,6 +161,10 @@ with st.sidebar.expander("Common topics or keywords"):
 with st.sidebar.expander("User satisfaction ratings"):
     st.write("Details go here...")
 
+# Improvement over time
+with st.sidebar.expander("Improvement over time"):
+    st.write("Details go here...")
+
 # Placeholder for the animated title
 if 'title_placeholder' not in st.session_state:
     st.session_state['title_placeholder'] = st.empty()
