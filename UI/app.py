@@ -4,10 +4,13 @@ import time
 # Function for chatbot responses
 def chatbot_response(user_input):
     responses = {
-        'hi': 'Hello! How can I assist you with your academic needs?',
-        'bye': 'Goodbye! Feel free to ask if you need more help.',
-        'what can you do': 'I can help you with academic advising, research topics, and more!',
-    }
+    'hi': 'Hello! How can I support you with your academic goals today?',
+    'hello': 'Hi there! What academic assistance do you need right now?',
+    'bye': 'Goodbye! Don’t hesitate to return if you have more questions.',
+    'what can you do': 'I can assist you with academic advising, research topics, and provide study tips. How can I help you?',
+    'help': 'Absolutely! What specific academic challenges are you facing?'
+}
+
     user_input = user_input.lower()
     for key in responses:
         if key in user_input:
