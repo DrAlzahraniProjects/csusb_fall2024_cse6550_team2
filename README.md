@@ -51,8 +51,13 @@ docker build -t team2-app .
 Run the Docker container to start the application. Use the command below:
 
 ```
-docker run -p 80:80 -p 5002:5002 -p 8888:8888 team2-app
+docker run -p 80:80 -p 5002:5002 -p 6002:6002 team2-app
 ```
 
 You can access the application at:
 http://localhost/team2 or http://127.0.0.1:5002/ or http://localhost:5002/
+
+
+
+
+

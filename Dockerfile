@@ -7,7 +7,7 @@ WORKDIR /app
 # Install dependencies
 RUN apt-get update && apt-get install -y wget
 
-# Determine system architecture and install the corresponding version of Miniconda
+# Determine system architecture and we will install the corresponding version of Miniconda
 RUN ARCH=$(uname -m) && \
     if [ "$ARCH" = "x86_64" ]; then \
         wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh; \
@@ -49,15 +49,18 @@ RUN apt-get update && apt-get install -y nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copy the current directory contents into the container
-COPY . /app
+COPY UI/ .
 
 # Expose ports for NGINX, Streamlit, and Jupyter
 EXPOSE 80
 EXPOSE 5002
-EXPOSE 8888
+EXPOSE 6002
 
 # Install NeMo Toolkit (with NLP) and its dependencies
 RUN /bin/bash -c "source ~/.bashrc && pip install nemo_toolkit[nlp] transformers pytorch-lightning==2.0.7"
 
 # Start NGINX, Streamlit, and Jupyter
-CMD service nginx start && streamlit run app.py --server.port=5002 && jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+CMD service nginx start && \
+    streamlit run app.py --server.port=5002 & \
+    jupyter notebook --ip=0.0.0.0 --port=6002 --no-browser --allow-root & \
+    tail -f /dev/null
