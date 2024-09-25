@@ -43,7 +43,6 @@ def display_rating_buttons(index):
         <div class="rating-buttons">
             <span class="rating-icon" title="Like">👍</span>
             <span class="rating-icon" title="Dislike">👎</span>
-            <span class="rating-icon" title="Copy">📋</span>
         </div>
     """, unsafe_allow_html=True)
 
