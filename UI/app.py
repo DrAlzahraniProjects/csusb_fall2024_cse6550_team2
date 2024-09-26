@@ -188,7 +188,7 @@ else:
 
     # Display the fixed title at the top left with a logo
     st.markdown(f"""
-        <div class="fixed-logo-text">Academic Assistant</div>
+        <div class="fixed-logo-text">Academic Chatbot</div>
     """, unsafe_allow_html=True)
 
 # Initialize session state for conversation history
@@ -196,7 +196,6 @@ if 'conversation' not in st.session_state:
     st.session_state['conversation'] = []
 
 # Display conversation history
-st.subheader("Conversation History")
 for index, message in enumerate(st.session_state['conversation']):
     if message['role'] == 'user':
         st.markdown(f'<div class="chat-message chat-message-user">{message["content"]}</div>', unsafe_allow_html=True)
