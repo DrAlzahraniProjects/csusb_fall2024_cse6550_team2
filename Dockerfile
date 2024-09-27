@@ -53,7 +53,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY UI/ .
 
 # Expose ports for NGINX, Streamlit, and Jupyter
-EXPOSE 80
+EXPOSE 82
 EXPOSE 5002
 EXPOSE 6002
 
