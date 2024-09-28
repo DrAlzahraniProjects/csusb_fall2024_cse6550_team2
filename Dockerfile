@@ -20,6 +20,10 @@ RUN ARCH=$(uname -m) && \
     rm Miniconda3-latest-Linux-*.sh && \
     apt-get clean
 
+#Setting Environment variables for StreamLit
+ENV STREAMLIT_SERVER_BASEURLPATH=/team2
+ENV STREAMLIT_SERVER_PORT=5002
+
 # Set the Mamba root prefix and add conda to the PATH
 ENV PATH="/root/miniconda3/bin:$PATH"
 ENV MAMBA_ROOT_PREFIX="/root/miniconda3"
@@ -52,9 +56,9 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY UI/ .
 
 # Expose ports for NGINX, Streamlit, and Jupyter
-EXPOSE 82
+#EXPOSE 82
+#EXPOSE 6002
 EXPOSE 5002
-EXPOSE 6002
 
 # Start NGINX, Streamlit, and Jupyter using JSON array syntax for CMD
 CMD ["sh", "-c", "service nginx start && \
