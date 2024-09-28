@@ -50,14 +50,17 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY UI/ .
 
 # Expose NGINX, Streamlit, and Jupyter Notebook ports
-EXPOSE 82 5002 6002
+EXPOSE 5002
 
 # Set environment variables for Streamlit
 ENV STREAMLIT_SERVER_BASEURLPATH=/team2
 ENV STREAMLIT_SERVER_PORT=5002
 
 # Start NGINX, Streamlit, and Jupyter
-CMD service nginx start && \
-    streamlit run app.py --server.port=5002 --server.address=0.0.0.0 --server.baseUrlPath=/team2 & \
-    jupyter notebook --ip=0.0.0.0 --port=6002 --no-browser --allow-root & \
-    tail -f /dev/null
+# CMD service nginx start && \
+#     streamlit run app.py --server.port=5002 --server.address=0.0.0.0 --server.baseUrlPath=/team2 & \
+#     jupyter notebook --ip=0.0.0.0 --port=6002 --no-browser --allow-root & \
+#     tail -f /dev/null
+ENTRYPOINT ["python"]
+
+CMD ["python", "UI/app.py"]
