@@ -56,8 +56,8 @@ EXPOSE 82
 EXPOSE 5002
 EXPOSE 6002
 
-# Start NGINX, Streamlit, and Jupyter
-CMD service nginx start && \
+# Start NGINX, Streamlit, and Jupyter using JSON array syntax for CMD
+CMD ["sh", "-c", "service nginx start && \
     streamlit run app.py --server.port=5002 & \
     jupyter notebook --ip=0.0.0.0 --port=6002 --no-browser --allow-root & \
-    tail -f /dev/null
+    tail -f /dev/null"]
