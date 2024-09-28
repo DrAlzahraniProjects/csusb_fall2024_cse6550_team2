@@ -1,3 +1,4 @@
+
 # Use the official Python image from the Docker Hub
 FROM python:3.9-slim
 
@@ -7,7 +8,7 @@ WORKDIR /app
 # Install dependencies
 RUN apt-get update && apt-get install -y wget
 
-# Determine system architecture and we will install the corresponding version of Miniconda
+# Install Miniconda based on system architecture
 RUN ARCH=$(uname -m) && \
     if [ "$ARCH" = "x86_64" ]; then \
         wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh; \
@@ -62,6 +63,7 @@ ENV STREAMLIT_SERVER_PORT=5002
 
 # Start NGINX, Streamlit, and Jupyter
 CMD service nginx start && \
-    streamlit run app.py --server.port=5002 --server.address=0.0.0.0 --server.baseUrlPath=/team2 & \
+streamlit run app.py --server.port=5002 --server.address=0.0.0.0 --server.baseUrlPath=/team2 & \
     jupyter notebook --ip=0.0.0.0 --port=6002 --no-browser --allow-root & \
     tail -f /dev/null
+
