@@ -57,6 +57,8 @@ docker run -p 82:82 -p 5002:5002 -p 6002:6002 team2-app
 You can access the application at:
 http://localhost:82/team2 or http://127.0.0.1:5002/ or http://localhost:5002/
 
+Accessing Jupyter Notebook at:
+http://localhost:6002/
 
 
 

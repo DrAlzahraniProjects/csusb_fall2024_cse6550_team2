@@ -20,7 +20,6 @@ RUN ARCH=$(uname -m) && \
     rm Miniconda3-latest-Linux-*.sh && \
     apt-get clean
 
-
 # Set the Mamba root prefix and add conda to the PATH
 ENV PATH="/root/miniconda3/bin:$PATH"
 ENV MAMBA_ROOT_PREFIX="/root/miniconda3"
@@ -50,19 +49,20 @@ RUN apt-get update && apt-get install -y nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copy the current directory contents into the container
-COPY UI/ .
+COPY UI/ . 
 
-#Setting Environment variables for StreamLit
+# Setting environment variables for StreamLit
 ENV STREAMLIT_SERVER_BASEURLPATH=/team2
 ENV STREAMLIT_SERVER_PORT=5002
 
 # Expose ports for NGINX, Streamlit, and Jupyter
-#EXPOSE 82
-#EXPOSE 6002
+EXPOSE 82 
 EXPOSE 5002
+EXPOSE 6002
 
 # Start NGINX, Streamlit, and Jupyter using JSON array syntax for CMD
+# Jupyter runs with token authentication disabled on port 6002
 CMD ["sh", "-c", "service nginx start && \
     streamlit run app.py --server.port=5002 & \
-    jupyter notebook --ip=0.0.0.0 --port=6002 --no-browser --allow-root & \
+    jupyter notebook --ip=0.0.0.0 --port=6002 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password='' & \
     tail -f /dev/null"]
