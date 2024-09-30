@@ -1,5 +1,5 @@
 # Use the official Python image from the Docker Hub
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 # Set the working directory
 WORKDIR /app
@@ -28,6 +28,12 @@ ENV MAMBA_ROOT_PREFIX="/root/miniconda3"
 RUN conda install mamba -c conda-forge -y && \
     mamba create -n team2_env python=3.11 -y && \
     mamba clean --all -f -y
+
+# Ensure Mamba is initialized properly
+RUN echo "source /root/miniconda3/etc/profile.d/conda.sh" >> ~/.bashrc
+
+# Install boa for faster solving
+RUN mamba install boa -c conda-forge
 
 # Set the environment path to use team2_env and ensure bash is used
 ENV PATH="/root/miniconda3/envs/team2_env/bin:$PATH"
