@@ -1,0 +1,13 @@
+
+    SRS: Software Requirements Specification
+    AI: Artificial Intelligence
+    FR: Functional Requirement
+    NFR: Non-funtional Requirment
+    RAG (Retrieval-Augmented Generation): A chatbot architecture that retrieves external information to generate answers.
+    Docker: A tool for creating and running containers to deploy applications.
+    UI: User Interface.
+    NLP: Natural Language Processing, a field of AI that deals with the interaction between computers and human languages.
+    API: Application Programming Interface, a set of functions and procedures for building software.
+    DoS: Denial of Service
+    BSCE: Burp Suite Community Edition
+    ZAP: Zed Attack Proxy
