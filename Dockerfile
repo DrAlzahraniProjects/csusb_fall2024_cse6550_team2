@@ -5,7 +5,7 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # Copy the assets folder (including style.css)
-COPY assets/ /app/assets/style.css
+COPY assets/ /app/assets/
 
 # Install dependencies
 RUN apt-get update && apt-get install -y wget
