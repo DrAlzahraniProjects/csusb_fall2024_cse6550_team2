@@ -2,6 +2,8 @@ import streamlit as st
 import time
 
 # Function for chatbot responses
+st.set_page_config(page_title = "Academic Chatbot - Team2", page_icon=None, layout="centered", initial_sidebar_state="auto", menu_items=None)
+
 def chatbot_response(user_input):
     responses = {
     'hi': 'Hello! How can I support you with your academic goals today?',
