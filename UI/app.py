@@ -1,15 +1,19 @@
 import streamlit as st
 import time
 
+with open("assets/style.css") as f:
+    st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+
 # Function for chatbot responses
 def chatbot_response(user_input):
     responses = {
-    'hi': 'Hello! How can I support you with your academic goals today?',
-    'hello': 'Hi there! What academic assistance do you need right now?',
-    'bye': 'Goodbye! Don’t hesitate to return if you have more questions.',
-    'what can you do': 'I can assist you with academic advising, research topics, and provide study tips. How can I help you?',
-    'help': 'Absolutely! What specific academic challenges are you facing?'
-}
+        'hi': 'Hello! How can I support you with your academic goals today?',
+        'hello': 'Hi there! What academic assistance do you need right now?',
+        'bye': 'Goodbye! Don’t hesitate to return if you have more questions.',
+        'what can you do': 'I can assist you with academic advising, research topics, and provide study tips. How can I help you?',
+        'help': 'Absolutely! What specific academic challenges are you facing?'
+    }
 
     user_input = user_input.lower()
     for key in responses:
@@ -43,87 +47,12 @@ def display_rating_buttons(index):
         <div class="rating-buttons">
             <span class="rating-icon" title="Like">👍</span>
             <span class="rating-icon" title="Dislike">👎</span>
-            <span class="rating-icon" title="Copy">📋</span>
         </div>
     """, unsafe_allow_html=True)
 
-# Custom CSS for styling messages, and logo
-primary_color = st.get_option("theme.primaryColor")
-background_color = st.get_option("theme.backgroundColor")
-text_color = st.get_option("theme.textColor")
-
-st.markdown(f"""
-    <style>
-    section[data-testid="stSidebar"] {{
-        padding-top: 0;
-    }}
-    .stTextInput input {{
-        background-color: {background_color} !important; /* Dynamic Background */
-        color: {text_color} !important; /* Dynamic Text Color */
-        border: 1px solid {primary_color} !important; /* Dynamic Border Color */
-        border-radius: 5px;
-        padding: 15px;
-        font-size: 1rem;
-        width: 100%;
-    }}
-    .chat-message {{
-        margin: 15px 0;
-        padding: 15px;
-    }}
-    .chat-message-user {{
-        text-align: right;
-        background-color: #3C3C3C; /* You may also want to make this dynamic */
-        color: #FFFFFF;
-        border: 1px solid #3C3F41;
-        border-radius: 10px;
-        padding: 10px 15px;
-        margin: 5px;
-        display: inline-block;
-        max-width: 70%;
-        float: right;
-        clear: both;
-    }}
-    .chat-message-bot {{
-        text-align: left;
-        background-color: #2B2B2B; /* You may also want to make this dynamic */
-        color: #FFFFFF;
-        border: 1px solid #3C3F41;
-        border-radius: 10px;
-        padding: 10px 15px;
-        margin: 5px;
-        display: inline-block;
-        max-width: 70%;
-        float: left;
-        clear: both;
-    }}
-    
-    .fixed-logo-text {{
-        font-size: 24px;
-        color: {text_color}; /* Dynamic Text Color */
-        font-weight: bold;
-        margin: -60px;
-    }}
-
-    .rating-buttons {{
-        text-align: left;
-        margin: 5px 0;
-        padding: 0;
-        display: flex;
-        gap: 8px;
-    }}
-    .rating-icon {{
-        cursor: pointer;
-        font-size: 1rem;
-        padding: 1px;
-        border-radius: 4px;
-        display: inline-block;
-        position: relative;
-    }}
-    .rating-icon:hover {{
-        background-color: #444444;
-    }}
-    </style>
-    """, unsafe_allow_html=True)
+# Apply the external CSS file
+with open("assets/style.css") as f:
+    st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 # Initialize session state for input tracking
 if 'input_given' not in st.session_state:
@@ -167,7 +96,7 @@ with st.sidebar.expander("User satisfaction ratings"):
 # Improvement over time
 with st.sidebar.expander("Improvement over time"):
     st.write("Details go here...")
-    
+
 # Statistics per day and overall
 with st.sidebar.expander("Statistics per day and overall"):
     st.write("Details go here...")
@@ -189,7 +118,7 @@ else:
 
     # Display the fixed title at the top left with a logo
     st.markdown(f"""
-        <div class="fixed-logo-text">Academic Assistant</div>
+        <div class="fixed-logo-text">Academic Chatbot</div>
     """, unsafe_allow_html=True)
 
 # Initialize session state for conversation history
@@ -197,7 +126,6 @@ if 'conversation' not in st.session_state:
     st.session_state['conversation'] = []
 
 # Display conversation history
-st.subheader("Conversation History")
 for index, message in enumerate(st.session_state['conversation']):
     if message['role'] == 'user':
         st.markdown(f'<div class="chat-message chat-message-user">{message["content"]}</div>', unsafe_allow_html=True)
