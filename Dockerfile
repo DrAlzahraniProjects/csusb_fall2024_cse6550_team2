@@ -4,7 +4,7 @@ FROM python:3.10-slim
 # Set the working directory
 WORKDIR /app
 
-# Copy css
+# Copy the assets folder (including style.css)
 COPY assets/ /app/assets/
 
 # Install dependencies
