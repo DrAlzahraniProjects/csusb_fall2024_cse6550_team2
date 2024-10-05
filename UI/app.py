@@ -1,9 +1,12 @@
 import streamlit as st
 import time
+st.set_page_config(page_title = "Academic Chatbot - Team2")#keep on top for tab title
 
+#for css styling
 with open("assets/style.css") as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
+# Function for chatbot responses
 def chatbot_response(user_input):
     responses = {
         'hi': 'Hello! How can I support you with your academic goals today?',
