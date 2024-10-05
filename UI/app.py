@@ -1,8 +1,9 @@
 import streamlit as st
 import time
-st.set_page_config(page_title = "Academic Chatbot - Team2")#keep on top for tab title
+# Changes tab title (Warning: Leave at top)
+st.set_page_config(page_title = "Academic Chatbot - Team2")
 
-#for css styling
+# CSS styling
 with open("assets/style.css") as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
