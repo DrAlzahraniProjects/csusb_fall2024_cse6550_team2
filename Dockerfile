@@ -1,5 +1,5 @@
 # Use the official Python image from the Docker Hub
-FROM python:3.10-slim
+FROM python:3.9-slim
 
 # Set the working directory
 WORKDIR /app
@@ -10,7 +10,7 @@ COPY assets/ /app/assets/
 # Install dependencies
 RUN apt-get update && apt-get install -y wget
 
-# Install Miniconda based on system architecture
+# Determine system architecture and we will install the corresponding version of Miniconda
 RUN ARCH=$(uname -m) && \
     if [ "$ARCH" = "x86_64" ]; then \
         wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh; \
@@ -19,31 +19,31 @@ RUN ARCH=$(uname -m) && \
     else \
         echo "Unsupported architecture: $ARCH" && exit 1; \
     fi && \
-    bash Miniconda3-latest-Linux-*.sh -b -p /root/miniconda3 && \
+    bash Miniconda3-latest-Linux-*.sh -b && \
+    ls -la /root/miniconda3 && \
     rm Miniconda3-latest-Linux-*.sh && \
     apt-get clean
 
-# Set the Mamba root prefix and add conda to the PATH
-ENV PATH="/root/miniconda3/bin:$PATH"
-ENV MAMBA_ROOT_PREFIX="/root/miniconda3"
+# Install Mamba using Miniconda and create a new environment with Python 3.11
+RUN /root/miniconda3/bin/conda install mamba -c conda-forge -y \
+    && /root/miniconda3/bin/mamba create -n team2_env python=3.11 -y \
+    && /root/miniconda3/bin/mamba clean --all -f -y
 
-# Install Mamba using Conda and create a new environment with Python 3.11
-RUN conda install mamba -c conda-forge -y && \
-    mamba create -n team2_env python=3.10 -y && \
-    mamba clean --all -f -y
-
-# Set the environment path to use team2_env and ensure bash is used
+# Set environment path to use team2_env and ensure bash is used
 ENV PATH="/root/miniconda3/envs/team2_env/bin:$PATH"
+
+# Activate the environment and install packages from requirements.txt
+SHELL ["/bin/bash", "-c"]
+RUN echo "source /root/miniconda3/bin/activate team2_env" >> ~/.bashrc
 
 # Copy requirements.txt into the container
 COPY requirements.txt /app/requirements.txt
 
 # Install Python packages from requirements.txt
-RUN mamba install --yes --file /app/requirements.txt && \
-    mamba clean --all -f -y
+RUN /bin/bash -c "source ~/.bashrc && mamba install --yes --file /app/requirements.txt && mamba clean --all -f -y"
 
 # Install Jupyter Notebook
-RUN mamba install -c conda-forge jupyter
+RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge jupyter"
 
 # Install NGINX
 # RUN apt-get update && apt-get install -y nginx
@@ -62,7 +62,6 @@ ENV STREAMLIT_SERVER_PORT=5002
 # EXPOSE 82 
 EXPOSE 5002
 # EXPOSE 6002
-
 # Start NGINX, Streamlit, and Jupyter using JSON array syntax for CMD
 # Jupyter runs with token authentication disabled on port 6002
 # ENTRYPOINT [ "python"]
