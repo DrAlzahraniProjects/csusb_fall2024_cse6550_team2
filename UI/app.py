@@ -4,10 +4,6 @@ import time
 with open("assets/style.css") as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
-
-# Function for chatbot responses
-st.set_page_config(page_title = "Academic Chatbot - Team2")
-
 def chatbot_response(user_input):
     responses = {
         'hi': 'Hello! How can I support you with your academic goals today?',
