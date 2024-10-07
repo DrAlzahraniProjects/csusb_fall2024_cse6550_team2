@@ -29,6 +29,7 @@ RUN /root/miniconda3/bin/conda install mamba -c conda-forge -y \
     && /root/miniconda3/bin/mamba create -n team2_env python=3.11 -y \
     && /root/miniconda3/bin/mamba clean --all -f -y
 
+
 # Set environment path to use team2_env and ensure bash is used
 ENV PATH="/root/miniconda3/envs/team2_env/bin:$PATH"
 
@@ -44,6 +45,9 @@ RUN /bin/bash -c "source ~/.bashrc && mamba install --yes --file /app/requiremen
 
 # Install Jupyter Notebook
 RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge jupyter"
+
+# Install pymilvus after activating the environment
+RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge pymilvus && mamba clean --all -f -y"
 
 # Install NGINX
 # RUN apt-get update && apt-get install -y nginx
