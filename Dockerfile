@@ -40,7 +40,7 @@ RUN /root/miniconda3/bin/conda info --envs && \
     /bin/bash -c "source ~/.bashrc && mamba install --yes --file /app/requirements.txt && mamba clean --all -f -y"
 
 # Install sentence-transformers using pip
-RUN /bin/bash -c "source ~/.bashrc && pip install sentence-transformers"
+# RUN /bin/bash -c "source ~/.bashrc && pip install sentence-transformers"
 
 # Install Jupyter Notebook
 RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge jupyter"
@@ -53,7 +53,7 @@ RUN /bin/bash -c "source ~/.bashrc && pip install pymilvus"
 RUN /bin/bash -c "source ~/.bashrc && python -c 'import pymilvus'"
 
 # Install sentence-transformers using pip
-# RUN /bin/bash -c "source ~/.bashrc && pip install sentence-transformers"
+RUN /bin/bash -c "source ~/.bashrc && pip install sentence-transformers"
 
 
 
@@ -69,4 +69,5 @@ EXPOSE 5002
 
 # Run the Streamlit app
 # CMD ["sh", "-c", "streamlit run app.py --server.port=5002 --server.address=0.0.0.0 --server.baseUrlPath=/team2"]
-CMD ["-c", "source /root/miniconda3/bin/activate team2_env && streamlit run app.py --server.port=5002 --server.address=0.0.0.0 --server.baseUrlPath=/team2"]
+# 
+CMD ["/bin/bash", "-c", "source /root/miniconda3/bin/activate team2_env && streamlit run app.py --server.port=5002 --server.address=0.0.0.0 --server.baseUrlPath=/team2"]

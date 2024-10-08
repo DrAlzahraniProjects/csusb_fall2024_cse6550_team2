@@ -2,12 +2,15 @@ import streamlit as st
 from pymilvus import connections, Collection
 from sentence_transformers import SentenceTransformer
 import numpy as np
+import os
 
 # Connect
-connections.connect("default", host="localhost", port="19530")
-
+try:
+    connections.connect("default", host="localhost", port="19530")
+except Exception  as e:
+    print(f"Error connecing to Milvus: {e}")
 # Load your data files from the extracted directory
-data_directory = 'www.csusb.edu'  # Change this to your data directory
+data_directory = 'csusb'  # Change this to your data directory
 documents = []
 for filename in os.listdir(data_directory):
     if filename.endswith('.html'):  # Assuming the pages are saved as HTML
