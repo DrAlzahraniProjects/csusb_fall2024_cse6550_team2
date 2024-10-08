@@ -48,7 +48,8 @@ RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge jupyter"
 
 # Install pymilvus after activating the environment
 RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge pymilvus && mamba clean --all -f -y"
-
+# Install sentence-transformers using pip
+RUN /bin/bash -c "source ~/.bashrc && pip install sentence-transformers"
 # Install NGINX
 # RUN apt-get update && apt-get install -y nginx
 
@@ -70,5 +71,6 @@ EXPOSE 5002
 # Jupyter runs with token authentication disabled on port 6002
 # ENTRYPOINT [ "python"]
 # CMD ["streamlit" "run" "app.py"]
+CMD ["sh", "-c", "source /root/miniconda3/bin/activate team2_env && streamlit run app.py --server.port=5002 --server.address=0.0.0.0 --server.baseUrlPath=/team2"]
 
-CMD ["sh", "-c", "streamlit run app.py --server.port=5002 --server.address=0.0.0.0 --server.baseUrlPath=/team2", "tail -f /dev/null"]
+# CMD ["sh", "-c", "streamlit run app.py --server.port=5002 --server.address=0.0.0.0 --server.baseUrlPath=/team2", "tail -f /dev/null"]
