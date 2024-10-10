@@ -1,5 +1,5 @@
 # Use the official Python image from the Docker Hub
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 # Set the working directory
 WORKDIR /app
@@ -9,6 +9,14 @@ COPY assets/ /app/assets/
 
 # Install dependencies
 RUN apt-get update && apt-get install -y wget
+
+
+# Install Langchain-milvus
+RUN pip install -U langchain-milvus
+
+RUN pip install langchain
+#
+RUN pip install --upgrade --quiet  langchain langchain-core langchain-community langchain-text-splitters langchain-milvus langchain-openai bs4
 
 # Determine system architecture and we will install the corresponding version of Miniconda
 RUN ARCH=$(uname -m) && \
