@@ -1,5 +1,69 @@
 import streamlit as st
 import time
+import streamlit as st
+from sentence_transformers import SentenceTransformer
+from pymilvus import connections, utility
+from transformers import pipeline
+import torch
+from huggingface_hub import login
+from dotenv import load_dotenv
+from transformers import pipeline
+import os
+
+# Milvus & Mistral
+# Load environment variables from the .env file
+load_dotenv()
+# Get the token from the environment variable
+huggingface_token = os.getenv('HUGGINGFACE_TOKEN')
+# Initialize Milvus connection
+milvus_host = 'localhost'  # Replace with your Milvus server host
+milvus_port = 19530  # Replace with your Milvus server port
+connections.connect(host=milvus_host, port=milvus_port)
+
+# Load Mistral embeddings using SentenceTransformer (replace with correct Hugging Face model)
+embedding_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')  # Example of a model for embeddings
+
+# Load Mistral LLM from Hugging Face (using a general-purpose model here)
+llm_pipeline = pipeline('text-generation', model='mistralai/Mistral-7B-Instruct-v0.1', device=torch.device('cuda' if torch.cuda.is_available() else 'cpu', use_auth_token=huggingface_token))
+
+# Initialize Milvus client
+milvus_client = connections.connect(host=milvus_host, port=milvus_port)
+
+# Sidebar with user input
+user_question = st.text_input('Ask your question here:')
+
+if user_question:
+    with st.spinner('Processing your question...'):
+        # Generate embeddings for the question using the embedding model
+        question_embedding = embedding_model.encode([user_question])
+
+        # Search in Milvus for relevant documents
+        search_params = {
+            'collection_name': 'academic_chatbot',  # Replace with your Milvus collection name
+            'query_emb': question_embedding[0],
+            'top_k': 5  # Number of documents to retrieve
+        }
+        search_results = utility.search_vectors(**search_params)
+
+        # Display search results
+        st.subheader('Search Results:')
+        for result in search_results:
+            st.write(f"- {result['document']}")
+
+        # Use the Mistral LLM model for chatbot response generation
+        chatbot_response = llm_pipeline(user_question, max_length=100, num_return_sequences=1)[0]['generated_text']
+        st.subheader('Chatbot Response:')
+        st.write(chatbot_response)
+
+        # Placeholder for like and unlike buttons
+        st.subheader('Feedback:')
+        if st.button('Like'):
+            st.write('Liked!')
+        if st.button('Unlike'):
+            st.write('Disliked.')
+
+# Disconnect from Milvus
+connections.disconnect()
 # Changes tab title (Warning: Leave at top)
 st.set_page_config(page_title = "Academic Chatbot - Team2")
 

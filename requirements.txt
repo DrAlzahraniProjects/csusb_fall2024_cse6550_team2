@@ -1,2 +1,9 @@
 streamlit
 jupyter
+huggingface_hub
+langchain
+langchain_community
+dotenv
+transformers
+sentence-transformers
+
