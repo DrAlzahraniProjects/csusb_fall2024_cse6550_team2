@@ -1,30 +1,34 @@
 import streamlit as st
 import time
-import streamlit as st
 from sentence_transformers import SentenceTransformer
 from pymilvus import connections, utility
 from transformers import pipeline
 import torch
-from huggingface_hub import login
 from dotenv import load_dotenv
-from transformers import pipeline
+
 import os
 
-# Milvus & Mistral
-# Load environment variables from the .env file
+# Load environment variables from the .env file (optional)
 load_dotenv()
+print("Hello")
 # Get the token from the environment variable
 huggingface_token = os.getenv('HUGGINGFACE_TOKEN')
+
 # Initialize Milvus connection
-milvus_host = 'localhost'  # Replace with your Milvus server host
-milvus_port = 19530  # Replace with your Milvus server port
+milvus_host = os.getenv('MILVUS_HOST', 'standalone')  # Use environment variable or default to 'standalone'
+milvus_port = int(os.getenv('MILVUS_PORT', 19530))    # Use environment variable or default to 19530
+milvus_host_local = 'localhost'
 connections.connect(host=milvus_host, port=milvus_port)
 
-# Load Mistral embeddings using SentenceTransformer (replace with correct Hugging Face model)
-embedding_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')  # Example of a model for embeddings
+# Load Mistral embeddings using SentenceTransformer
+embedding_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
-# Load Mistral LLM from Hugging Face (using a general-purpose model here)
-llm_pipeline = pipeline('text-generation', model='mistralai/Mistral-7B-Instruct-v0.1', device=torch.device('cuda' if torch.cuda.is_available() else 'cpu', use_auth_token=huggingface_token))
+# Load Mistral LLM from Hugging Face
+llm_pipeline = pipeline(
+        "question-answering",
+        model="distilbert-base-uncased-distilled-squad",
+        tokenizer="distilbert-base-uncased-distilled-squad"
+    )
 
 # Initialize Milvus client
 milvus_client = connections.connect(host=milvus_host, port=milvus_port)
@@ -64,11 +68,12 @@ if user_question:
 
 # Disconnect from Milvus
 connections.disconnect()
+
 # Changes tab title (Warning: Leave at top)
-st.set_page_config(page_title = "Academic Chatbot - Team2")
+st.set_page_config(page_title="Academic Chatbot - Team2-Updated")
 
 # CSS styling
-with open("assets/style.css") as f:
+with open("./assets/style.css") as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 # Function for chatbot responses
@@ -117,7 +122,7 @@ def display_rating_buttons(index):
     """, unsafe_allow_html=True)
 
 # Apply the external CSS file
-with open("assets/style.css") as f:
+with open("./assets/style.css") as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 # Initialize session state for input tracking

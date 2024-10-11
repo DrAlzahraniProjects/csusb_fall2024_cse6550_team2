@@ -2,6 +2,6 @@ streamlit
 jupyter
 huggingface_hub
 transformers
-dotenv
+python-dotenv
 # sentence-transformers
 
