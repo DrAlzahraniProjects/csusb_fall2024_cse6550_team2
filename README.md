@@ -50,6 +50,12 @@ docker-compose up --build -d
 Development : http://localhost:5002/team2/
 Production : https://sec.cse.csusb.edu/team2/
 
+### Step 6: Only for Development 
+Restart service alone in the container if you make any changes made in app.py
+
+```
+docker-compose restart app
+```
 
 
 

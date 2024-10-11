@@ -67,7 +67,7 @@ if user_question:
             st.write('Disliked.')
 
 # Disconnect from Milvus
-connections.disconnect()
+# connections.disconnect()
 
 # Changes tab title (Warning: Leave at top)
 st.set_page_config(page_title="Academic Chatbot - Team2-Updated")
