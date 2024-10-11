@@ -1,0 +1,15 @@
+# config.toml
+
+[server]
+runOnSave = true                   # Enables auto-reload on save
+enableCORS = false                 # Disables Cross-Origin Resource Sharing
+baseUrlPath = "/team2"             # Sets the base URL path for the app
+port = 5002                        # Specifies the port Streamlit runs on
+address = "0.0.0.0"                # Binds the server to all available IPs
+fileWatcherType = "poll"           # Uses polling for file changes (useful in Docker)
+
+[theme]
+primaryColor = "#F63366"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+textColor = "#262730"

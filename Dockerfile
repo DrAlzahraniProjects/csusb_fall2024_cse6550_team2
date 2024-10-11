@@ -53,14 +53,19 @@ RUN /bin/bash -c "source ~/.bashrc && pip install pymilvus"
 RUN /bin/bash -c "source ~/.bashrc && python -c 'import pymilvus'"
 
 # Install sentence-transformers using pip
-RUN /bin/bash -c "source ~/.bashrc && pip install sentence-transformers"
+RUN /bin/bash -c "source ~/.bashrc && pip install transformers sentence_transformers"
 
 # Copy the app code from the UI folder
 COPY UI/ .
+COPY assets/ ./assets
 
+# Copy Streamlit config
+COPY config.toml /root/.streamlit/config.toml
 # Set environment variables for Streamlit
 ENV STREAMLIT_SERVER_BASEURLPATH=/team2
 ENV STREAMLIT_SERVER_PORT=5002
+ENV MILVUS_HOST=standalone
+ENV MILVUS_PORT=19530
 
 # Expose ports for Streamlit
 EXPOSE 5002
