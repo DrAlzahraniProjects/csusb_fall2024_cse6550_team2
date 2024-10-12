@@ -148,26 +148,34 @@ def initialize_models():
 
 embedding_model, qa_pipeline_model = initialize_models()
 
-# Function to Insert Data (Optional)
+# Function to insert data into the Milvus collection
 def insert_data(collection, model):
     docs = split_pages_by_documents()
     texts = [doc.page_content for doc in docs]
-    # Encode texts to get embeddings
-    embeddings = model.encode(texts).tolist()
+
+    # Prepare lists to hold truncated texts and embeddings
+    all_truncated_texts = []
+    all_embeddings = []
+
+    # Process each text
+    for text in texts:
+        # Truncate the text to the max length of 500 characters
+        truncated_text = text[:500]  # Truncating to 500 characters
+        all_truncated_texts.append(truncated_text)
+
+    # Encode all truncated texts to get embeddings
+    embeddings = model.encode(all_truncated_texts).tolist()
 
     # Prepare data for insertion
     data = [
-        texts,
+        all_truncated_texts,
         embeddings
     ]
-    print(f"Inserted {len(texts)} vectors into the collection.")
-    print(data)
+    print(f"Inserted {len(all_truncated_texts)} vectors into the collection.")
+    
     # Insert data into Milvus
     collection.insert(data)
-    st.info(f"Inserted {len(texts)} records into '{collection.name}'.")
-
-
-insert_data(collection, embedding_model)
+    st.info(f"Inserted {len(all_truncated_texts)} records into '{collection.name}'.")
 
 
 # Handle User Question and Generate Response
