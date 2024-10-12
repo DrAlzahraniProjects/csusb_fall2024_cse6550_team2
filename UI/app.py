@@ -67,7 +67,7 @@ milvus_host = os.getenv('MILVUS_HOST', 'standalone')  # Use environment variable
 milvus_port = int(os.getenv('MILVUS_PORT', 19530))    # Use environment variable or default to 19530
 
 # Data
-web_file= ["https://www.csusb.edu/academics"]
+web_file= ["https://catalog.csusb.edu/graduate-degree-programs/"]
 def split_pages_by_documents():
     loader = WebBaseLoader(web_paths=web_file)
     documents = loader.load()
