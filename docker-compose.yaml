@@ -69,11 +69,11 @@ services:
     depends_on:
       - standalone
     environment:
-      - MILVUS_HOST: standalone
-      - MILVUS_PORT: 19530
-      - HUGGINGFACE_TOKEN: ${HUGGINGFACE_TOKEN} 
-      - STREAMLIT_SERVER_RUNONSAVE=true
-      - STREAMLIT_SERVER_FILEWATCHERTYPE=poll
+      MILVUS_HOST: standalone
+      MILVUS_PORT: 19530
+      HUGGINGFACE_TOKEN: ${HUGGINGFACE_TOKEN}
+      STREAMLIT_SERVER_RUNONSAVE: "true"
+      STREAMLIT_SERVER_FILEWATCHERTYPE: "poll"
     volumes:
       - ./UI:/app/UI
       - ./assets:/app/assets
