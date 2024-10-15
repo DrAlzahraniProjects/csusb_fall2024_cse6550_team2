@@ -32,3 +32,5 @@ build/
 *.sublime-project
 *.sublime-workspace
 
+.env.local
+.env.prod
