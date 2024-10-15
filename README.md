@@ -57,10 +57,6 @@ No Need to re build the image. Use the below command if you make any change in a
 ```
 streamlit run UI/app.py
 ```
-```
-docker-compose restart app
-```
-
 
 
 
