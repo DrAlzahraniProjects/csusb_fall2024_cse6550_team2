@@ -6,6 +6,7 @@ from transformers import pipeline
 import os
 import traceback
 from dotenv import load_dotenv
+import sys
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -15,13 +16,107 @@ load_dotenv()
 # Streamlit App Configuration
 st.set_page_config(page_title="Academic Chatbot - Team2", layout="wide")
 
-# Initialize Session State for Conversation History
-if 'conversation' not in st.session_state:
-    st.session_state['conversation'] = []
-
 # CSS Styling
 with open("assets/style.css") as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+# Initialize Session State for Conversation History
+if 'conversation' not in st.session_state:  
+    st.session_state['conversation'] = []
+
+# Display an Animated Typing Title
+def typing_title_animation(title, delay=0.3):
+    placeholder = st.empty()
+    words = title.split()
+    full_text = ""
+    for word in words:
+        full_text += word + " "
+        placeholder.markdown(f"<h1 style='text-align: center;'>{full_text.strip()}</h1>", unsafe_allow_html=True)
+        time.sleep(delay)
+    return placeholder
+# Placeholder for the Animated Title
+if 'title_placeholder' not in st.session_state:
+    st.session_state['title_placeholder'] = st.empty()
+# Function to Clear Animated Title After Input
+def clear_title():
+    st.session_state['title_placeholder'].empty()
+# Display Animated Title if No Input Yet
+if not st.session_state.get('input_given', False):
+    st.session_state['title_placeholder'] = typing_title_animation("Academic Advisor Chatbot", delay=0.3)
+else:
+    clear_title()
+    # Display the Fixed Title at the Top Left with a Logo
+    st.markdown("""
+        <div style="position: fixed; top: 10px; left: 10px; font-size: 24px; font-weight: bold;">
+            Academic Chatbot
+        </div>
+    """, unsafe_allow_html=True)
+# Display Conversation History
+for i, message in enumerate(st.session_state['conversation']):
+    if message['role'] == 'user':
+        st.markdown(f'<div class="chat-message chat-message-user">{message["content"]}</div>', unsafe_allow_html=True)
+    else:
+        st.markdown(f'<div class="chat-message chat-message-bot">{message["content"]}</div>', unsafe_allow_html=True)
+
+        # Add Like/Dislike buttons under the bot's message
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button(f'Like {i}', key=f'like_{i}'):
+                st.write('Liked!')
+        with col2:
+            if st.button(f'Dislike {i}', key=f'dislike_{i}'):
+                st.write('Disliked.')
+                
+user_question = st.text_input("You:", key="user_input", placeholder="Ask me anything academic...", label_visibility='collapsed')
+
+# Handle User Question and Generate Response
+if user_question:
+    st.session_state['input_given'] = True
+    st.session_state['conversation'].append({"role": "user", "content": user_question})
+    with st.spinner('Processing your question...'):
+        try:
+            # Encode the question
+            query_embedding = embedding_model.encode([user_question]).tolist()
+            # Define search parameters
+            search_params = {"metric_type": "L2", "params": {"nprobe": 10}}
+            results = collection.search(
+                data=query_embedding,
+                anns_field="embedding",
+                param=search_params,
+                limit=5,
+                expr=None
+            )
+            
+            # Check if any results found
+            if not results or len(results[0]) == 0:
+                answer = "Sorry, I cannot answer that now."
+            else:
+                # Aggregate retrieved texts as context
+                context = " ".join([hit.entity.get("text") for hit in results[0]])
+                # Use the QA pipeline to generate an answer
+                try:
+                    answer = qa_pipeline_model(question=user_question, context=context)['answer']
+                except Exception as e:
+                    answer = "Sorry, I encountered an error while processing your request."
+        
+        except Exception as e:
+            answer = "Sorry, I cannot answer that now."
+        
+        # Append the answer to the conversation history
+        st.session_state['conversation'].append({"role": "bot", "content": answer})
+
+
+# Feedback Buttons
+if user_question:
+    st.subheader('Feedback:')
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button('Like'):
+            st.write('Liked!')
+    with col2:
+        if st.button('Unlike'):
+            st.write('Disliked.')
+
 
 # Sidebar: Stats Section
 st.sidebar.header("Statistics")
@@ -37,9 +132,7 @@ st.sidebar.markdown("Improvement over time: ...")
 st.sidebar.markdown("Feedback summary: ...")
 st.sidebar.markdown("Statistics per day and overall: ...")
 
-# Centered Chat Bar for User Input
-st.markdown("<h2 style='text-align: center;'>Ask Your Question</h2>", unsafe_allow_html=True)
-user_question = st.text_input("You:", key="user_input", placeholder="Ask me anything academic...", label_visibility='collapsed')
+
 
 # Get Environment Variables
 huggingface_token = os.getenv('HUGGINGFACE_TOKEN')
@@ -78,7 +171,7 @@ def initialize_milvus():
         st.error(f"Failed to connect to Milvus: {e}")
         st.error("Error details:")
         st.text(traceback.format_exc())  # Show full traceback
-        st.stop()
+        st.stop()  # Stop the execution if Milvus connection fails
     
     collection_name = "academic_chatbot"
     if collection_name not in utility.list_collections():
@@ -103,7 +196,10 @@ def initialize_milvus():
     collection.load()
     return collection
 
+# Check if the collection is initialized before proceeding
 collection = initialize_milvus()
+if collection is None:
+    st.error("Unable to initialize Milvus. The chatbot cannot proceed without the database connection.")
 
 # Initialize Models
 @st.cache_resource
@@ -137,46 +233,3 @@ def insert_data(collection, model):
     collection.insert(data)
     st.info(f"Inserted {len(all_truncated_texts)} records into '{collection.name}'.")
 
-# Handle User Question and Generate Response
-if user_question:
-    st.session_state['conversation'].append({"role": "user", "content": user_question})
-    with st.spinner('Processing your question...'):
-        query_embedding = embedding_model.encode([user_question]).tolist()
-        search_params = {"metric_type": "L2", "params": {"nprobe": 10}}
-        results = collection.search(
-            data=query_embedding,
-            anns_field="embedding",
-            param=search_params,
-            limit=5,
-            expr=None
-        )
-
-        if not results or len(results[0]) == 0:
-            answer = "I'm sorry, I don't have an answer for that."
-        else:
-            context = " ".join([hit.entity.get("text") for hit in results[0]])
-            try:
-                answer = qa_pipeline_model(question=user_question, context=context)['answer']
-            except Exception as e:
-                answer = f"Sorry, I encountered an error: {e}"
-
-        st.session_state['conversation'].append({"role": "bot", "content": answer})
-
-# Display Conversation History
-st.subheader("Conversation")
-for message in st.session_state['conversation']:
-    if message['role'] == 'user':
-        st.markdown(f'<div class="chat-message chat-message-user">{message["content"]}</div>', unsafe_allow_html=True)
-    else:
-        st.markdown(f'<div class="chat-message chat-message-bot">{message["content"]}</div>', unsafe_allow_html=True)
-
-# Feedback Buttons
-if user_question:
-    st.subheader('Feedback:')
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button('Like'):
-            st.write('Liked!')
-    with col2:
-        if st.button('Unlike'):
-            st.write('Disliked.')
