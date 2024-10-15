@@ -1,2 +1,9 @@
 streamlit
 jupyter
+huggingface_hub
+transformers
+python-dotenv
+pymilvus>=2.4.4
+tqdm
+# sentence-transformers
+
