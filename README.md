@@ -48,11 +48,15 @@ docker-compose up --build -d
 
 **Windows** - Make sure Docker Desktop application is open in your local machine
 Development : http://localhost:5002/team2/
+
 Production : https://sec.cse.csusb.edu/team2/
 
 ### Step 6: Only for Development 
-Restart service alone in the container if you make any changes made in app.py
-
+Restart service alone in the container if you make any changes made in app.py.
+No Need to re build the image. Use the below command if you make any change in app.py.
+```
+streamlit run UI/app.py
+```
 ```
 docker-compose restart app
 ```
