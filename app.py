@@ -81,6 +81,19 @@ def main():
     # Accuracy rate
     with st.sidebar.expander("Accuracy rate"):
             st.write("Details go here...")
+    
+    # Common topics or keywords
+    with st.sidebar.expander("Common topics or keywords"):
+        st.write("Details go here...")
+
+    # User satisfaction ratings
+    with st.sidebar.expander("User satisfaction ratings"):
+        st.write("Details go here...")
+
+    # Improvement over time
+    with st.sidebar.expander("Improvement over time"):
+        st.write("Details go here...")
+
 
 if __name__ == "__main__":
     # If streamlit instance is running
