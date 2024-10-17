@@ -94,7 +94,15 @@ def main():
     with st.sidebar.expander("Improvement over time"):
         st.write("Details go here...")
 
+    # Statistics per day and overall
+    with st.sidebar.expander("Statistics per day and overall"):
+        st.write("Details go here...")
 
+    # Feedback summary
+    with st.sidebar.expander("Feedback summary"):
+        st.write("Details go here...")
+
+        
     if "messages" not in st.session_state:
         st.session_state.messages = []
         with st.spinner("Initializing, Please Wait..."):
