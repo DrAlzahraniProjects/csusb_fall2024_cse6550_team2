@@ -95,6 +95,68 @@ def main():
         st.write("Details go here...")
 
 
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+        with st.spinner("Initializing, Please Wait..."):
+            vector_store = initialize_milvus()
+
+
+    # Handle feedback for each message
+    def handle_feedback(message_index, feedback_type):
+        if feedback_type == "like":
+            st.session_state.messages[message_index]["feedback"] = "like"
+        elif feedback_type == "dislike":
+            st.session_state.messages[message_index]["feedback"] = "dislike"
+
+    # Render existing messages
+    for idx, message in enumerate(st.session_state.messages):
+        if message["role"] == "assistant":
+            st.markdown(f"""
+                <div class='assistant-message'>
+                    {message['content']}
+                </div>
+            """, unsafe_allow_html=True)
+            # Display the source of the message in blue
+            st.caption(f":blue[{message['source']}]")
+            # Like and Dislike buttons placed next to each other
+            st.markdown("""
+                <div class='feedback-buttons'>
+                    <button aria-label="👍 Like" onclick="window.location.reload()">👍</button>
+                    <button aria-label="👎 Dislike" onclick="window.location.reload()">👎</button>
+                </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
+            
+    # Handle user input
+    if prompt := st.chat_input("Message Team2 academic chatbot"):      
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.markdown(f"<div class='user-message'>{prompt}</div>", unsafe_allow_html=True)
+
+        response_placeholder = st.empty()
+
+        with response_placeholder.container():
+            with st.spinner('Generating Response'):
+
+                # generate response from RAG model
+                answer, source = query_rag(prompt)
+            st.session_state.messages.append({"role": "assistant", "content": answer, "source": source})
+            response_placeholder.markdown(f"""
+                <div class='assistant-message'>
+                    {answer}
+                </div>
+            """, unsafe_allow_html=True)
+        st.caption(f":blue[{source}]")
+
+        # Add like and dislike buttons for the newly generated assistant message
+        st.markdown("""
+            <div class='feedback-buttons'>
+                <button aria-label="👍 Like" onclick="window.location.reload()">👍</button>
+                <button aria-label="👎 Dislike" onclick="window.location.reload()">👎</button>
+            </div>
+        """, unsafe_allow_html=True)
+
+
 if __name__ == "__main__":
     # If streamlit instance is running
     if os.environ.get("STREAMLIT_RUNNING") == "1":
