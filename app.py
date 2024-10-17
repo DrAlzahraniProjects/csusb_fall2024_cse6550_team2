@@ -58,86 +58,13 @@ def main():
     # Sidebar for chat history and statistics
     st.sidebar.title("10 Statistics Reports")
 
-    # List of statistics to display
-    statistics = [
-        "Number of questions",
-        "Number of correct answers",
-        "Number of incorrect answers",
-        "User engagement metrics",
-        "Response time analysis",
-        "Accuracy rate",
-        "Common topics or keywords",
-        "User satisfaction ratings",
-        "Improvement over time",
-        "Feedback summary",
-        "Statistics per day and overall"
-    ]
+    # Number of questions
+    with st.sidebar.expander("Number of questions"):
+            st.write("Details go here...")
 
-    # Display statistics in the sidebar
-    for stat in statistics:
-        st.sidebar.write(stat)
-
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-        with st.spinner("Initializing, Please Wait..."):
-            vector_store = initialize_milvus()
-
-
-    # Handle feedback for each message
-    def handle_feedback(message_index, feedback_type):
-        if feedback_type == "like":
-            st.session_state.messages[message_index]["feedback"] = "like"
-        elif feedback_type == "dislike":
-            st.session_state.messages[message_index]["feedback"] = "dislike"
-
-    # Render existing messages
-    for idx, message in enumerate(st.session_state.messages):
-        if message["role"] == "assistant":
-            st.markdown(f"""
-                <div class='assistant-message'>
-                    {message['content']}
-                </div>
-            """, unsafe_allow_html=True)
-            # Display the source of the message in blue
-            st.caption(f":blue[{message['source']}]")
-            # Like and Dislike buttons placed next to each other
-            st.markdown("""
-                <div class='feedback-buttons'>
-                    <button aria-label="👍 Like" onclick="window.location.reload()">👍</button>
-                    <button aria-label="👎 Dislike" onclick="window.location.reload()">👎</button>
-                </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
-            
-    # Handle user input
-    if prompt := st.chat_input("Message Team2 academic chatbot"):      
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        st.markdown(f"<div class='user-message'>{prompt}</div>", unsafe_allow_html=True)
-
-        response_placeholder = st.empty()
-
-        with response_placeholder.container():
-            with st.spinner('Generating Response'):
-
-                # generate response from RAG model
-                answer, source = query_rag(prompt)
-            st.session_state.messages.append({"role": "assistant", "content": answer, "source": source})
-            response_placeholder.markdown(f"""
-                <div class='assistant-message'>
-                    {answer}
-                </div>
-            """, unsafe_allow_html=True)
-        st.caption(f":blue[{source}]")
-
-        # Add like and dislike buttons for the newly generated assistant message
-        st.markdown("""
-            <div class='feedback-buttons'>
-                <button aria-label="👍 Like" onclick="window.location.reload()">👍</button>
-                <button aria-label="👎 Dislike" onclick="window.location.reload()">👎</button>
-            </div>
-        """, unsafe_allow_html=True)
-
+    # Number of correct answers
+    with st.sidebar.expander("Number of correct answers"):
+             st.write("Details go here...")
 
 if __name__ == "__main__":
     # If streamlit instance is running
