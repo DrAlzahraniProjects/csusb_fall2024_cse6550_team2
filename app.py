@@ -64,7 +64,15 @@ def main():
 
     # Number of correct answers
     with st.sidebar.expander("Number of correct answers"):
-             st.write("Details go here...")
+            st.write("Details go here...")
+
+    # Number of incorrect answers
+    with st.sidebar.expander("Number of incorrect answers"):
+            st.write("Details go here...")
+
+    # User engagement metrics
+    with st.sidebar.expander("User engagement metrics"):
+            st.write("Details go here...")
 
 if __name__ == "__main__":
     # If streamlit instance is running
