@@ -2,8 +2,8 @@ import streamlit as st
 import os
 import subprocess
 from RAG import *
-
-
+# Changes tab title (Warning: Leave at top)
+st.set_page_config(page_title = "Academic Chatbot - Team2")
 def main():
     """Main Streamlit app logic."""
     header = st.container()
