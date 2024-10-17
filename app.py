@@ -74,6 +74,14 @@ def main():
     with st.sidebar.expander("User engagement metrics"):
             st.write("Details go here...")
 
+    # Response time analysis
+    with st.sidebar.expander("Response time analysis"):
+            st.write("Details go here...")
+
+    # Accuracy rate
+    with st.sidebar.expander("Accuracy rate"):
+            st.write("Details go here...")
+
 if __name__ == "__main__":
     # If streamlit instance is running
     if os.environ.get("STREAMLIT_RUNNING") == "1":
