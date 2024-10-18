@@ -1,2 +1,7 @@
 streamlit
 jupyter
+huggingface_hub
+transformers
+python-dotenv
+
+
