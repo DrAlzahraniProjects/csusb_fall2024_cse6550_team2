@@ -62,18 +62,18 @@ services:
       - minio
 
   app:
-    container_name: streamlit-app
+    container_name: team2-app
     build: .
     ports:
       - "5002:5002"
     depends_on:
       - standalone
-    environment:
-      - MILVUS_HOST: standalone
-      - MILVUS_PORT: 19530
-      - HUGGINGFACE_TOKEN: ${HUGGINGFACE_TOKEN} 
-      - STREAMLIT_SERVER_RUNONSAVE=true
-      - STREAMLIT_SERVER_FILEWATCHERTYPE=poll
+    # environment:
+      # - MILVUS_HOST='localhost'
+      # - MILVUS_PORT=19530
+      # - HUGGINGFACE_TOKEN: ${HUGGINGFACE_TOKEN} 
+      # - STREAMLIT_SERVER_RUNONSAVE=true
+      # - STREAMLIT_SERVER_FILEWATCHERTYPE=poll
     volumes:
       - ./UI:/app/UI
       - ./assets:/app/assets

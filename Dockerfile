@@ -10,10 +10,10 @@ COPY requirements.txt /app/requirements.txt
 # Copy the assets folder (including style.css)
 COPY assets/ /app/assets/
 
-# Install wget and other necessary tools
+# # Install wget and other necessary tools
 RUN apt-get update && apt-get install -y wget
 
-# Determine system architecture and install the corresponding version of Miniconda
+# # Determine system architecture and install the corresponding version of Miniconda
 RUN ARCH=$(uname -m) && \
     if [ "$ARCH" = "x86_64" ]; then \
     wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh; \
@@ -26,7 +26,7 @@ RUN ARCH=$(uname -m) && \
     rm Miniconda3-latest-Linux-*.sh && \
     apt-get clean
 
-# Install Mamba using Miniconda and create a new environment with Python 3.11
+# # Install Mamba using Miniconda and create a new environment with Python 3.11
 RUN /root/miniconda3/bin/conda install mamba -c conda-forge -y && \
     /root/miniconda3/bin/mamba create -n team2_env python=3.9 -y && \
     /root/miniconda3/bin/mamba clean --all -f -y
@@ -47,7 +47,7 @@ RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge jupyter"
 
 # Install pymilvus using Mamba
 # RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge pymilvus && mamba clean --all -f -y"
-RUN /bin/bash -c "source ~/.bashrc && pip install pymilvus langchain langchain_community"
+RUN /bin/bash -c "source ~/.bashrc && pip install pymilvus langchain langchain_community mistralai"
 
 # Check if pymilvus is installed 
 RUN /bin/bash -c "source ~/.bashrc && python -c 'import pymilvus'"
@@ -60,11 +60,11 @@ COPY UI/ .
 COPY assets/ ./assets
 
 # Copy Streamlit config
-COPY config.toml /root/.streamlit/config.toml
+# COPY config.toml /root/.streamlit/config.toml
 # Set environment variables for Streamlit
 ENV STREAMLIT_SERVER_BASEURLPATH=/team2
 ENV STREAMLIT_SERVER_PORT=5002
-ENV MILVUS_HOST=standalone
+ENV MILVUS_HOST=localhost
 ENV MILVUS_PORT=19530
 
 # Expose ports for Streamlit
