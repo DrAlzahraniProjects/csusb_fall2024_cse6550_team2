@@ -53,11 +53,11 @@ def generate_prompt(context,input):
     - Maintain a formal and academic tone.
 
     <context>
-    {context}
+        {context}
     </context>
 
     <question>
-    {input}
+        {input}
     </question>
 
     Assistant:"""
