@@ -53,14 +53,32 @@ def initialize_milvus():
                 "params": {"nlist": 128}   # Number of clusters, adjust based on data
             }
     collection.create_index(field_name="embedding", index_params=index_params)
+    try:
+        if len(cleaned_webpage_contents) == len(corrected_embeddings):
+            list_embeddings= create_data_embeddings()
+            # Insert data into Milvus
+            data = [
+                # [i for i in range(len(content_list))],  # Auto-generated IDs (primary keys)
+                corrected_embeddings,  # List of embeddings as FLOAT_VECTORs
+                cleaned_webpage_contents  # List of webpage contents (VARCHARs)
+            ]
+            insert_result = collection.insert(data)
+            #print(f"Inserted {len(content_list)} entries into Milvus.")
+
+            # Flush to persist data
+            collection.flush()
+        else:
+            print("Error: Content list and embedding list lengths do not match!")
+    except Exception as e:
+        print(f"Failed to insert data into Milvus: {e}")
 
 
 def insert_vectors(cleaned_webpage_contents, corrected_embeddings):
     # Insert the cleaned webpage content and their corresponding embeddings into Milvus
     # Ensure the collection is created and loaded
    
-    collection = Collection("academic_webpages")
-    # collection.load()
+    collection =create_collection()
+    collection.load()
 
     try:
         if len(cleaned_webpage_contents) == len(corrected_embeddings):

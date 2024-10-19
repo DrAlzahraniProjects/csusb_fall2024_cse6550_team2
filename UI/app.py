@@ -1,8 +1,10 @@
 import os
+from UI.milvus_utils import initialize_milvus
 import streamlit as st
 # from pymilvus import MilvusClient, model, connections, db
 import requests
 import os
+import time
 from pymilvus import connections, Collection, FieldSchema, CollectionSchema, DataType, utility
 from mistralai import Mistral
 import re
@@ -172,7 +174,7 @@ else:
 if 'conversation' not in st.session_state:
     st.session_state['conversation'] = []
     with st.spinner("Initializing, Please Wait..."):
-        vector_store = connect_milvus()
+        vector_store = initialize_milvus()
 
 # Display conversation history
 for index, message in enumerate(st.session_state['conversation']):
