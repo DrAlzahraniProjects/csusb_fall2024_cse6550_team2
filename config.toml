@@ -1,0 +1,15 @@
+# config.toml
+
+[server]
+runOnSave = true
+enableCORS = false
+baseUrlPath = "/team2"
+port = 5002
+address = "0.0.0.0"
+fileWatcherType = "poll"
+
+[theme]
+primaryColor = "#F63366"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+textColor = "#262730"

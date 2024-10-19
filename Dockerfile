@@ -10,6 +10,10 @@ COPY requirements.txt /app/requirements.txt
 # Copy the assets folder (including style.css)
 COPY assets/ /app/assets/
 
+RUN rm -rf /root/.streamlit/config.toml
+
+COPY ./.streamlit/config.toml /root/.streamlit/config.toml
+
 # # Install wget and other necessary tools
 RUN apt-get update && apt-get install -y wget
 
