@@ -19,7 +19,7 @@ import streamlit as st
 import torch
 from langchain import LLMChain
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-from mistral_llm import generate_response, generate_respose_llm
+from mistral_llm import generate_response
 
 # Connect to Milvus server
 def create_connection():

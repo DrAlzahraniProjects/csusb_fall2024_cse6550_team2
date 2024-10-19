@@ -85,7 +85,7 @@ def adjust_query_embedding(query_embedding, target_dim=768):
 
     return adjusted_embedding
 
-def query_embeddings():
+def query_embeddings(query):
     # Generate query embedding using the Mistral client
     query_embedding = client.embeddings.create(model=model_name, inputs=[query]).data[0].embedding
 
@@ -114,7 +114,7 @@ def generate_response(query, collection, client, model_name=model, generator=Non
         str: The generated answer based on the chained context.
     """
     # Generate query embedding using the Mistral client
-    query_embedding = client.embeddings.create(model=model_name, inputs=[query]).data[0].embedding
+    query_embedding = query_embeddings(query)
 
     # Adjust the query embedding to match the target dimension of the collection (e.g., 768)
     adjusted_query_embedding = adjust_query_embedding(query_embedding, target_dim=768)
