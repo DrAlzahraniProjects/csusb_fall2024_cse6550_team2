@@ -14,10 +14,10 @@ from pymilvus import connections, Collection
 import numpy as np
 # from langchain_community.llms import Mistral
 import streamlit as st
-import torch
+#import torch
 from langchain import LLMChain
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-from data_scraping import cleaned_webpage_contents
+from UI.data_scraping import cleaned_webpage_contents
 
 api_key = "IetRnH5Lb578MdB5Ml0HNTdMBzeHUe7q"
 model = "mistral-embed"

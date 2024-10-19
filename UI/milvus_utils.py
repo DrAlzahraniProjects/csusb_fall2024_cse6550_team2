@@ -14,11 +14,11 @@ from pymilvus import connections, Collection
 import numpy as np
 # from langchain_community.llms import Mistral
 import streamlit as st
-import torch
+#import torch
 from langchain import LLMChain
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-from data_scraping import cleaned_webpage_contents
-from embeddings import corrected_embeddings, create_data_embeddings
+from UI.data_scraping import cleaned_webpage_contents
+from UI.embeddings import corrected_embeddings, create_data_embeddings
 
 @st.cache_resource
 # Define the collection schema

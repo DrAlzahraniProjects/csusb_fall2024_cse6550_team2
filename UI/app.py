@@ -16,10 +16,10 @@ from pymilvus import connections, Collection
 import numpy as np
 # from langchain_community.llms import Mistral
 import streamlit as st
-import torch
+#import torch
 from langchain import LLMChain
 # from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-from mistral_llm import generate_response
+from UI.mistral_llm import generate_response
 token=os.getenv("HUGGINGFACE_HUB_TOKEN")
 # Connect to Milvus server
 def create_connection():
