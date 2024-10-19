@@ -18,9 +18,9 @@ import numpy as np
 import streamlit as st
 import torch
 from langchain import LLMChain
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+# from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from mistral_llm import generate_response
-
+token=os.getenv("HUGGINGFACE_HUB_TOKEN")
 # Connect to Milvus server
 def create_connection():
     connections.connect(alias="default", host='localhost', port='19530')  # Adjust host and port to your setup

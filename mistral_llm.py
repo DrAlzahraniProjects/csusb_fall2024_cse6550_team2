@@ -20,11 +20,11 @@ from langchain import LLMChain
 from langchain_core.prompts import PromptTemplate
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
-
+token=os.getenv("HUGGINGFACE_HUB_TOKEN")
 # Load the Mistral model and tokenizer from Hugging Face
 model_name = "mistralai/Mistral-7B-v0.1"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model_llm = AutoModelForCausalLM.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name,use_auth_token=token)
+model_llm = AutoModelForCausalLM.from_pretrained(model_name,use_auth_token=token)
 generator = pipeline("text-generation", model=model_llm, tokenizer=tokenizer)
 # Set up Mistral API
 api_key = "IetRnH5Lb578MdB5Ml0HNTdMBzeHUe7q"
