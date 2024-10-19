@@ -63,7 +63,7 @@ streamlit run UI/app.py
 While Debudding, inorder to view any print statements
 
 ```
-docker-compose logs -f team2-app
+docker-compose logs -f app
 
 ```
 
