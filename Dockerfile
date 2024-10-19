@@ -57,7 +57,7 @@ RUN /bin/bash -c "source ~/.bashrc && pip install pymilvus langchain langchain_c
 RUN /bin/bash -c "source ~/.bashrc && python -c 'import pymilvus'"
 
 # Install sentence-transformers using pip
-RUN /bin/bash -c "source ~/.bashrc && pip install transformers "
+RUN /bin/bash -c "source ~/.bashrc && pip install transformers torch torchvision torchaudio request beautifulsoup4 numpy"
 
 # Copy the app code from the UI folder
 COPY UI/ .
