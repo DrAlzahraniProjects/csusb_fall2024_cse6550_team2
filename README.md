@@ -36,28 +36,35 @@ Ensure your local repository is up-to-date by running:
 git pull origin main
 ```
 
-### Step 4: Build the Docker Image
+### Step 4: Build and Run the Docker Image
 
 Make sure Docker is installed and running on your machine. Build the Docker image using the following command:
 
 ```
-docker build -t team2-app .
+docker-compose up --build -d
 ```
 
-### Step 5: Run the Docker Container
+### Step 5: Access the application
 
 **Windows** - Make sure Docker Desktop application is open in your local machine
+Development : http://localhost:5002/team2/
 
-Run the Docker container to start the application. Use the command below:
+Production : https://sec.cse.csusb.edu/team2/
+
+### Step 6: Only for Development 
+Delete only the container not images if you make any changes made in app.py.
+No Need to re build the image. Use the below command if you make any change in app.py.
 
 ```
-docker run -p 5002:5002 team2-app
+streamlit run UI/app.py
+
 ```
 
-You can access the application at:
-http://localhost:5002/team2/
+While Debudding, inorder to view any print statements
 
+```
+docker-compose logs -f app
 
-
+```
 
 
