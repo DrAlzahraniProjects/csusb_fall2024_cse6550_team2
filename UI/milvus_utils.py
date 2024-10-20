@@ -51,7 +51,7 @@ def create_collection():
 def initialize_milvus():
     # print("start initializing milvus")
     #  Establish connection
-    connections.connect(host='standalone', port='19530')  # Use the service name in Docker Compose
+    connections.connect(host='127.0.0.1', port=19530)  # Use the service name in Docker Compose
     print("Connected!!")
     
     #  Create Collection
