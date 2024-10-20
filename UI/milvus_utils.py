@@ -24,7 +24,7 @@ from data_scraping import cleaned_webpage_contents
 # from langchain.llms import Mistral
 
 from embeddings import corrected_embeddings, create_data_embeddings
-print('end milvus imoort ')
+# print('end milvus imoort ')
 
 
 @st.cache_resource
@@ -47,11 +47,13 @@ def create_collection():
         collection = Collection(name=collection_name, schema=schema)
         print(f"Collection created: {collection.name}")
     return collection  # Return the collection object
-print("before initializing milvus")
+# print("before initializing milvus")
 def initialize_milvus():
-    print("start initializing milvus")
+    # print("start initializing milvus")
     #  Establish connection
     connections.connect(host='standalone', port='19530')  # Use the service name in Docker Compose
+    print("Connected!!")
+    
     #  Create Collection
     collection = create_collection()
     # Create Index

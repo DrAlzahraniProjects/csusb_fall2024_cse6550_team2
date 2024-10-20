@@ -82,4 +82,4 @@ services:
 
 networks:
   default:
-    name: milvus-network
+    driver: bridge
