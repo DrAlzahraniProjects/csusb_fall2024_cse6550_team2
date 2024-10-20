@@ -1,6 +1,8 @@
 import os
-from UI.milvus_utils import initialize_milvus
+from milvus_utils import initialize_milvus
 import streamlit as st
+
+
 # from pymilvus import MilvusClient, model, connections, db
 import requests
 import os
@@ -12,55 +14,29 @@ import requests
 from bs4 import BeautifulSoup
 from langchain_community.vectorstores import Milvus
 # from langchain.embeddings import MistralEmbeddings
+
+
+
 # from langchain.llms import Mistral
 from langchain.chains import RetrievalQA
 from pymilvus import connections, Collection
 import numpy as np
 # from langchain_community.llms import Mistral
-import streamlit as st
+
+# import streamlit as st
 #import torch
 from langchain import LLMChain
+
 # from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-from UI.mistral_llm import generate_response
-token=os.getenv("HUGGINGFACE_HUB_TOKEN")
-# Connect to Milvus server
-def create_connection():
-    connections.connect(alias="default", host='localhost', port='19530')  # Adjust host and port to your setup
-    print("Connected to Milvus")
-
-create_connection()
-# Define the collection schema
-def create_collection():
-    collection_name = "aca_database"
-
-    if utility.has_collection(collection_name):
-        # If collection exists, load it
-        collection = Collection(collection_name)
-        #print(f"Collection '{collection_name}' loaded.")
-    else:
-        # Define fields for a new collection
-        fields = [
-            FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=True),
-            FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=768),  # Adjust dimension based on Mistral
-            FieldSchema(name="content", dtype=DataType.VARCHAR, max_length=5000)  # Storing webpage content
-        ]
-
-        schema = CollectionSchema(fields, description="Collection for webpage embeddings")
-
-        # Create a new collection
-        collection = Collection(name=collection_name, schema=schema)
-        print(f"Collection created: {collection.name}")
-
-    return collection  # Return the collection object
-
-
-
-collection = create_collection()
-
-# Actual app.py
-
-# Changes tab title (Warning: Leave at top)
+print("Starting import...")
+from mistral_llm import generate_response
+print("Import successful!")
 st.set_page_config(page_title = "Academic Chatbot - Team2")
+
+
+# Initialize session state for input tracking
+if 'input_given' not in st.session_state:
+    st.session_state['input_given'] = False  # Track if input has been given
 
 # CSS styling
 with open("assets/style.css") as f:
@@ -103,9 +79,57 @@ def display_rating_buttons(index):
 with open("assets/style.css") as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
-# Initialize session state for input tracking
-if 'input_given' not in st.session_state:
-    st.session_state['input_given'] = False  # Track if input has been given
+
+
+token=os.getenv("HUGGINGFACE_HUB_TOKEN")
+print("Before create_connection ")
+# Connect to Milvus server
+def create_connection(alias="default", host='standalone', port='19530', retries=5, delay=2):
+    for attempt in range(retries):
+        try:
+            print(f"Attempting to connect to Milvus (Attempt {attempt + 1})...")
+            connections.connect(alias=alias, host=host, port=port)
+            print("Connected to Milvus")
+            return
+        except Exception as e:
+            print(f"Failed to connect to Milvus: {e}")
+            time.sleep(delay)
+    raise Exception("Failed to connect to Milvus after several attempts.")
+
+
+# create_connection()
+# Define the collection schema
+def create_collection():
+    collection_name = "aca_database"
+
+    if utility.has_collection(collection_name):
+        # If collection exists, load it
+        collection = Collection(collection_name)
+        #print(f"Collection '{collection_name}' loaded.")
+    else:
+        # Define fields for a new collection
+        fields = [
+            FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=True),
+            FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=768),  # Adjust dimension based on Mistral
+            FieldSchema(name="content", dtype=DataType.VARCHAR, max_length=5000)  # Storing webpage content
+        ]
+
+        schema = CollectionSchema(fields, description="Collection for webpage embeddings")
+
+        # Create a new collection
+        collection = Collection(name=collection_name, schema=schema)
+        print(f"Collection created: {collection.name}")
+
+    return collection  # Return the collection object
+
+
+
+# collection = create_collection()
+
+# Actual app.py
+
+# Changes tab title (Warning: Leave at top)
+
 
 # Sidebar for chat history and statistics
 st.sidebar.title("Metric Summary")
@@ -169,23 +193,6 @@ else:
     st.markdown(f"""
         <div class="fixed-logo-text">Academic Chatbot</div>
     """, unsafe_allow_html=True)
-
-# Initialize session state for conversation history
-if 'conversation' not in st.session_state:
-    st.session_state['conversation'] = []
-    with st.spinner("Initializing, Please Wait..."):
-        vector_store = initialize_milvus()
-
-# Display conversation history
-for index, message in enumerate(st.session_state['conversation']):
-    if message['role'] == 'user':
-        st.markdown(f'<div class="chat-message chat-message-user">{message["content"]}</div>', unsafe_allow_html=True)
-        st.caption(f":blue[{message['source']}]")
-        # Display the rating buttons below each bot response
-        display_rating_buttons(index)
-    else:
-        st.markdown(f'<div class="chat-message chat-message-bot">{message["content"]}</div>', unsafe_allow_html=True)
-
 # Input box
 # st.text_input(
 #     "You: ",
@@ -194,30 +201,52 @@ for index, message in enumerate(st.session_state['conversation']):
 #     on_change=process_input,
 #     label_visibility="collapsed",
 # )
+# Initialize session state for conversation history
+if 'conversation' not in st.session_state:
+    st.session_state['conversation'] = []
+    with st.spinner("Initializing, Please Wait..."):
+        vector_store = initialize_milvus()
 
- # Handle user input
-    if prompt := st.chat_input("Message Team2 academic chatbot"):      
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        st.markdown(f"<div class='user-message'>{prompt}</div>", unsafe_allow_html=True)
 
-        response_placeholder = st.empty()
 
-        with response_placeholder.container():
-            with st.spinner('Generating Response'):
-                # generate response from LLM 
-                answer, source = generate_response(prompt)
-            st.session_state.messages.append({"role": "assistant", "content": answer, "source": source})
-            response_placeholder.markdown(f"""
-                <div class='assistant-message'>
-                    {answer}
-                </div>
-            """, unsafe_allow_html=True)
-        st.caption(f":blue[{source}]")
 
-        # Add like and dislike buttons for the newly generated assistant message
-        st.markdown("""
-            <div class='feedback-buttons'>
-                <button aria-label="👍 Like" onclick="window.location.reload()">👍</button>
-                <button aria-label="👎 Dislike" onclick="window.location.reload()">👎</button>
+
+if 'messages' not in st.session_state:
+    st.session_state['messages'] = [] 
+
+# Handle user input
+if prompt := st.chat_input("Message Team2 academic chatbot"):      
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.markdown(f"<div class='user-message'>{prompt}</div>", unsafe_allow_html=True)
+
+    response_placeholder = st.empty()
+
+    with response_placeholder.container():
+        with st.spinner('Generating Response'):
+            # generate response from LLM 
+            answer = generate_response(prompt)
+        st.session_state.messages.append({"role": "assistant", "content": answer})
+        response_placeholder.markdown(f"""
+            <div class='assistant-message'>
+                {answer}
             </div>
         """, unsafe_allow_html=True)
+    # st.caption(f":blue[{source}]")
+
+    # Add like and dislike buttons for the newly generated assistant message
+    st.markdown("""
+        <div class='feedback-buttons'>
+            <button aria-label="👍 Like" onclick="window.location.reload()">👍</button>
+            <button aria-label="👎 Dislike" onclick="window.location.reload()">👎</button>
+        </div>
+    """, unsafe_allow_html=True)
+    
+        # Display conversation history
+for index, message in enumerate(st.session_state['conversation']):
+    if message['role'] == 'user':
+        st.markdown(f'<div class="chat-message chat-message-user">{message["content"]}</div>', unsafe_allow_html=True)
+        # st.caption(f":blue[{message['source']}]")
+        # Display the rating buttons below each bot response
+        display_rating_buttons(index)
+    else:
+        st.markdown(f'<div class="chat-message chat-message-bot">{message["content"]}</div>', unsafe_allow_html=True)

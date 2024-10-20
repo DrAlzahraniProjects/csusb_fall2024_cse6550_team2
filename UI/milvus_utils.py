@@ -1,24 +1,31 @@
 # from pymilvus import MilvusClient, model, connections, db
-import requests
+print('beging milvus imoort ')
+
 import os
-from pymilvus import connections, Collection, FieldSchema, CollectionSchema, DataType, utility
-from mistralai import Mistral
 import re
 import requests
+import numpy as np
+
+# Third-party libraries
+import streamlit as st
 from bs4 import BeautifulSoup
+from pymilvus import connections, Collection, FieldSchema, CollectionSchema, DataType, utility
+from langchain import LLMChain
+from langchain.chains import RetrievalQA
 from langchain_community.vectorstores import Milvus
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+
+# Local imports
+from data_scraping import cleaned_webpage_contents
+
+# Optional: Uncomment if you plan to use these later
+# from mistralai import Mistral
 # from langchain.embeddings import MistralEmbeddings
 # from langchain.llms import Mistral
-from langchain.chains import RetrievalQA
-from pymilvus import connections, Collection
-import numpy as np
-# from langchain_community.llms import Mistral
-import streamlit as st
-#import torch
-from langchain import LLMChain
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-from UI.data_scraping import cleaned_webpage_contents
-from UI.embeddings import corrected_embeddings, create_data_embeddings
+
+from embeddings import corrected_embeddings, create_data_embeddings
+print('end milvus imoort ')
+
 
 @st.cache_resource
 # Define the collection schema
@@ -40,10 +47,11 @@ def create_collection():
         collection = Collection(name=collection_name, schema=schema)
         print(f"Collection created: {collection.name}")
     return collection  # Return the collection object
-
+print("before initializing milvus")
 def initialize_milvus():
+    print("start initializing milvus")
     #  Establish connection
-    connections.connect(host='localhost', port='19530')
+    connections.connect(host='standalone', port='19530')  # Use the service name in Docker Compose
     #  Create Collection
     collection = create_collection()
     # Create Index

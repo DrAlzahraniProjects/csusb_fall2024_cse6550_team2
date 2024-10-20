@@ -1,4 +1,5 @@
 # from pymilvus import MilvusClient, model, connections, db
+print('beging mistral imoort ')
 import requests
 import os
 from milvus_utils import create_collection
@@ -19,17 +20,35 @@ import streamlit as st
 from langchain import LLMChain
 from langchain_core.prompts import PromptTemplate
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+print('finish  mistral imoort ')
 
-token=os.getenv("HUGGINGFACE_HUB_TOKEN")
+
+token=os.getenv("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")
+# token = "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"
+print('get huggingface ')
 # Load the Mistral model and tokenizer from Hugging Face
 model_name = "mistralai/Mistral-7B-v0.1"
-tokenizer = AutoTokenizer.from_pretrained(model_name,use_auth_token=token)
-model_llm = AutoModelForCausalLM.from_pretrained(model_name,use_auth_token=token)
+print('model_naame ')
+@st.cache_resource
+def load_model():
+    print("load_model")
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=token)
+    print("Tokenizer")
+    model_llm = AutoModelForCausalLM.from_pretrained(model_name, use_auth_token=token)
+    return tokenizer, model_llm
+
+tokenizer, model_llm = load_model()
+
+print('model_llm ')
+
 generator = pipeline("text-generation", model=model_llm, tokenizer=tokenizer)
+print('generator ')
+
 # Set up Mistral API
 api_key = "IetRnH5Lb578MdB5Ml0HNTdMBzeHUe7q"
 model = "mistral-embed"
 client = Mistral(api_key=api_key)
+print('client ')
 
 def generate_prompt(context,input):
     """
@@ -95,6 +114,7 @@ def query_embeddings(query):
     adjusted_query_embedding = np.array(adjusted_query_embedding).astype(np.float32).reshape(1, -1)
 
 #  Function to search Milvus collection and generate a chain-based response
+print("generate_response!")
 def generate_response(query, collection, client, model_name=model, generator=None):
     """
     Uses Milvus to retrieve relevant context and generates a response using an LLM.
@@ -113,17 +133,21 @@ def generate_response(query, collection, client, model_name=model, generator=Non
     Returns:
         str: The generated answer based on the chained context.
     """
+    print("start query!")
     # Generate query embedding using the Mistral client
     query_embedding = query_embeddings(query)
-
+    print("query_embedding!")
     # Adjust the query embedding to match the target dimension of the collection (e.g., 768)
     adjusted_query_embedding = adjust_query_embedding(query_embedding, target_dim=768)
+    print("adjusted_query_embedding!")
     # Convert to numpy array and reshape for search
     adjusted_query_embedding = np.array(adjusted_query_embedding).astype(np.float32).reshape(1, -1)
+    print("adjusted_query_embedding2")
 
     # Define search parameters
     search_params = {"metric_type": "L2", "params": {"nprobe": 10}}
-    
+    print("search_params")
+
     # Search in Milvus collection
     results = collection.search(
         data=adjusted_query_embedding,
@@ -132,7 +156,7 @@ def generate_response(query, collection, client, model_name=model, generator=Non
         limit=5,
         output_fields=["content"]
     )
-
+    print("results")
     # Extract matched content from the search results
     matched_contents = []
     for hit in results:
@@ -141,14 +165,17 @@ def generate_response(query, collection, client, model_name=model, generator=Non
             matched_contents.append(entity_content)
         except AttributeError:
             continue
-
+    print("forloop")
     # Combine matched content into a single context if available
     combined_context = "\n\n".join(matched_contents) if matched_contents else "No relevant context found."
-
+    print("combined_context")
     # Create a prompt using the matched content and user's input
     prompt = generate_prompt(combined_context,query)
+    print("prompt")
     # Generate the response using the provided LLM generator
     response = generator(prompt, max_length=512, num_return_sequences=1)[0]['generated_text']
+    print("response")
+
     print(response)
     return response
 

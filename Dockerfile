@@ -51,7 +51,7 @@ RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge jupyter"
 
 # Install pymilvus using Mamba
 # RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge pymilvus && mamba clean --all -f -y"
-RUN /bin/bash -c "source ~/.bashrc && pip install pymilvus langchain langchain_community mistralai"
+RUN /bin/bash -c "source ~/.bashrc && pip install pymilvus==2.3.0 langchain langchain_community mistralai"
 
 # Check if pymilvus is installed 
 RUN /bin/bash -c "source ~/.bashrc && python -c 'import pymilvus'"
