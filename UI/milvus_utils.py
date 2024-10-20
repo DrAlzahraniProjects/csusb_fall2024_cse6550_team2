@@ -46,7 +46,9 @@ def create_collection():
         # Create a new collection
         collection = Collection(name=collection_name, schema=schema)
         print(f"Collection created: {collection.name}")
+        
     return collection  # Return the collection object
+
 print("before initializing milvus")
 def initialize_milvus():
     print("start initializing milvus")
@@ -60,7 +62,16 @@ def initialize_milvus():
                 "metric_type": "L2",       # Distance metric, can also be IP (Inner Product) for cosine similarity
                 "params": {"nlist": 128}   # Number of clusters, adjust based on data
             }
-    collection.create_index(field_name="embedding", index_params=index_params)
+    #collection.create_index(field_name="embedding", index_params=index_params)
+    #Added if else block to make sure that we are having one index for one field 
+     # Check if index already exists on the 'embedding' field
+    if len(collection.indexes) == 0:
+        # No index exists, so create a new one
+        collection.create_index(field_name="embedding", index_params=index_params)
+        print("Index created for 'embedding' field.")
+    else:
+        print(f"Index already exists on field 'embedding': {collection.indexes}")
+        
     try:
         if len(cleaned_webpage_contents) == len(corrected_embeddings):
             list_embeddings= create_data_embeddings()
@@ -75,6 +86,7 @@ def initialize_milvus():
 
             # Flush to persist data
             collection.flush()
+            print(f"Inserted {len(corrected_embeddings)} entries into Milvus.")
         else:
             print("Error: Content list and embedding list lengths do not match!")
     except Exception as e:
@@ -102,6 +114,7 @@ def insert_vectors(cleaned_webpage_contents, corrected_embeddings):
 
             # Flush to persist data
             collection.flush()
+            print(f"Inserted {len(corrected_embeddings)} entries into Milvus.")
         else:
             print("Error: Content list and embedding list lengths do not match!")
     except Exception as e:

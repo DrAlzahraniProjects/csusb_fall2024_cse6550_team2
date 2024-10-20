@@ -1,18 +1,16 @@
 import os
 from milvus_utils import initialize_milvus
 import streamlit as st
-
-
 # from pymilvus import MilvusClient, model, connections, db
-import requests
+#import requests
 import os
 import time
 from pymilvus import connections, Collection, FieldSchema, CollectionSchema, DataType, utility
 from mistralai import Mistral
-import re
-import requests
+#import re
+#import requests
 from bs4 import BeautifulSoup
-from langchain_community.vectorstores import Milvus
+#from langchain_community.vectorstores import Milvus
 # from langchain.embeddings import MistralEmbeddings
 
 
@@ -29,7 +27,7 @@ from langchain import LLMChain
 
 # from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 print("Starting import...")
-from mistral_llm import generate_response
+#from mistral_llm import generate_response
 print("Import successful!")
 st.set_page_config(page_title = "Academic Chatbot - Team2")
 
@@ -209,8 +207,6 @@ if 'conversation' not in st.session_state:
 
 
 
-
-
 if 'messages' not in st.session_state:
     st.session_state['messages'] = [] 
 
@@ -224,14 +220,14 @@ if prompt := st.chat_input("Message Team2 academic chatbot"):
     with response_placeholder.container():
         with st.spinner('Generating Response'):
             # generate response from LLM 
-            answer = generate_response(prompt)
-        st.session_state.messages.append({"role": "assistant", "content": answer})
+         answer = generate_response(prompt)
+         st.session_state.messages.append({"role": "assistant", "content": answer})
         response_placeholder.markdown(f"""
             <div class='assistant-message'>
                 {answer}
             </div>
         """, unsafe_allow_html=True)
-    # st.caption(f":blue[{source}]")
+    st.caption(f":blue[{source}]")
 
     # Add like and dislike buttons for the newly generated assistant message
     st.markdown("""
@@ -245,7 +241,7 @@ if prompt := st.chat_input("Message Team2 academic chatbot"):
 for index, message in enumerate(st.session_state['conversation']):
     if message['role'] == 'user':
         st.markdown(f'<div class="chat-message chat-message-user">{message["content"]}</div>', unsafe_allow_html=True)
-        # st.caption(f":blue[{message['source']}]")
+        st.caption(f":blue[{message['source']}]")
         # Display the rating buttons below each bot response
         display_rating_buttons(index)
     else:
