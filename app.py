@@ -178,14 +178,15 @@ def main():
         process_input(prompt)
 
     # Display conversation history
-    for message in st.session_state.get('messages', []):
+    for index, message in enumerate(st.session_state.get('messages', [])):
         if isinstance(message, dict) and 'role' in message and 'content' in message:
             if message['role'] == 'user':
                 st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
             else:
-                st.markdown(f"<div class='assistant-message'>{message['content']}</div>", unsafe_allow_html=True)
-
-
+                ai_response, source_url = message['content']
+                st.markdown(f"<div class='assistant-message'>{ai_response}</div>", unsafe_allow_html=True)
+                st.markdown(f"**Source**: [{source_url}]({source_url})", unsafe_allow_html=True)
+                display_rating_buttons(index)
 if __name__ == "__main__":
     # If streamlit instance is running
     if os.environ.get("STREAMLIT_RUNNING") == "1":
