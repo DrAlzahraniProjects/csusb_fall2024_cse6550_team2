@@ -1,3 +1,29 @@
+# Define the global variable corpus_source
+corpus_source = [
+    "https://www.csusb.edu/cse",
+    "https://www.csusb.edu/cse/programs",
+    "https://www.csusb.edu/cse/programs/bs-computer-science",
+    "https://www.csusb.edu/cse/programs/bs-computer-engineering",
+    "https://www.csusb.edu/cse/programs/bs-bioinformatics",
+    "https://www.csusb.edu/cse/programs/ba-computer-systems",
+    "https://www.csusb.edu/cse/programs/ms-computer-science",
+    "https://www.csusb.edu/cse/programs/minor-computer-science",
+    "https://catalog.csusb.edu/colleges-schools-departments/natural-sciences/computer-science-engineering/data-sci-minor/",
+    "https://www.csusb.edu/profile/alzahran",
+    "https://www.csusb.edu/cse/faculty-and-staff/faculty-office-hours",
+    "https://www.csusb.edu/cse/faculty-and-staff/industry-advisory-board",
+    "https://catalog.csusb.edu/coursesaz/cse/",
+    "https://catalog.csusb.edu/colleges-schools-departments/natural-sciences/computer-science-engineering/computer-science-ms/",
+    "https://www.csusb.edu/cse/faculty-staff",
+    "https://www.csusb.edu/cse/advising",
+    "https://www.csusb.edu/cse/resources",
+    "https://www.csusb.edu/cse/internships-careers",
+    "https://www.csusb.edu/cse/contact"
+]
+
+
+
+
 import os
 from dotenv import load_dotenv
 from langchain.chains.combine_documents import create_stuff_documents_chain
@@ -12,6 +38,10 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.chains import create_retrieval_chain
 from langchain_huggingface import HuggingFaceEmbeddings
 from pymilvus import connections, utility
+
+
+
+
 
 load_dotenv()
 MISTRAL_API_KEY = "IetRnH5Lb578MdB5Ml0HNTdMBzeHUe7q"
@@ -35,12 +65,12 @@ def query_rag(query):
     """
     Entry point for the RAG model to generate an answer to a given query
 
-    This function initializes the RAG model, sets up the necessary components such as the prompt template, vector store, 
+    This function initializes the RAG model, sets up the necessary components such as the prompt template, vector store,
     retriever, document chain, and retrieval chain, and then generates a response to the provided query.
 
     Args:
         query (str): The query string for which an answer is to be generated.
-    
+
     Returns:
         str: The answer to the query
     """
@@ -127,31 +157,13 @@ def initialize_milvus(uri: str=MILVUS_URI):
 
 def load_documents_from_web():
     """
-    Load the documents from the web and store the page contents
+    Load the documents from the web based on the global corpus_source variable.
     """
-    loader = WebBaseLoader(web_paths=[
-        "https://www.csusb.edu/cse",
-        "https://www.csusb.edu/cse/programs",
-        "https://www.csusb.edu/cse/programs/bs-computer-science",
-        "https://www.csusb.edu/cse/programs/bs-computer-engineering",
-        "https://www.csusb.edu/cse/programs/bs-bioinformatics",
-        "https://www.csusb.edu/cse/programs/ba-computer-systems",
-        "https://www.csusb.edu/cse/programs/ms-computer-science",
-        "https://www.csusb.edu/cse/programs/minor-computer-science",
-        "https://catalog.csusb.edu/colleges-schools-departments/natural-sciences/computer-science-engineering/data-sci-minor/",
-        "https://www.csusb.edu/profile/alzahran",
-        "https://www.csusb.edu/cse/faculty-and-staff/faculty-office-hours",
-        "https://www.csusb.edu/cse/faculty-and-staff/industry-advisory-board",
-        "https://catalog.csusb.edu/coursesaz/cse/",
-        "https://catalog.csusb.edu/colleges-schools-departments/natural-sciences/computer-science-engineering/computer-science-ms/",
-        "https://www.csusb.edu/cse/faculty-staff",
-        "https://www.csusb.edu/cse/advising",
-        "https://www.csusb.edu/cse/resources",
-        "https://www.csusb.edu/cse/internships-careers",
-        "https://www.csusb.edu/cse/contact"
-    ])
+    global corpus_source  # Use the global variable
+
+    loader = WebBaseLoader(web_paths=corpus_source)
     documents = loader.load()
-    
+
     return documents
 
 
