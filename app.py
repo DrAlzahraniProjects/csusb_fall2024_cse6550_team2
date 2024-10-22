@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import subprocess
 from RAG import *
+import time
 
 st.set_page_config(page_title = "Academic Chatbot - Team2")
 
@@ -38,7 +39,7 @@ def main():
         st.session_state['user_engagement'] = {'likes': 0, 'dislikes': 0}
 
     # CSS styling
-    with open("./styles.css") as f:
+    with open("assets/style.css") as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
     # Function for animated typing title
@@ -61,9 +62,9 @@ def main():
             </div>
         """, unsafe_allow_html=True)
 
-    # Apply the external CSS file
-    with open("./styles.css") as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+    # # Apply the external CSS file
+    # with open("./styles.css") as f:
+    #     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 
     # Sidebar for chat history and statistics
@@ -142,8 +143,8 @@ def main():
     # Initialize session state for conversation history
     if 'conversation' not in st.session_state:
         st.session_state['conversation'] = []
-        with st.spinner("Initializing, Please Wait..."):
-            vector_store = loading_collection()
+        # with st.spinner("Initializing, Please Wait..."):
+        #     vector_store = loading_collection()
 
     if 'messages' not in st.session_state:
         st.session_state['messages'] = [] 
