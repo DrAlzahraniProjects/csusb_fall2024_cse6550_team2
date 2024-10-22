@@ -10,5 +10,5 @@ langchain-mistralai
 sentence-transformers
 faiss-cpu
 mistralai
-pymilvus
+pymilvus[model]
 pydantic==2.5.2
