@@ -37,7 +37,8 @@ def main():
 
     if 'user_engagement' not in st.session_state:
         st.session_state['user_engagement'] = {'likes': 0, 'dislikes': 0}
-
+    if 'rated_responses' not in st.session_state or not isinstance(st.session_state['rated_responses'], dict):
+        st.session_state['rated_responses'] = {} 
     # CSS styling
     with open("assets/style.css") as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
@@ -52,15 +53,40 @@ def main():
             placeholder.markdown(f"<h1 style='text-align: center;'>{full_text.strip()}</h1>", unsafe_allow_html=True)
             time.sleep(delay)
         return placeholder
-
-    # Function to display rating buttons for each bot response
+    #Function to display rating buttons for each bot response
     def display_rating_buttons(index):
-        st.markdown(f"""
-            <div class="rating-buttons">
-                <span class="rating-icon" title="Like">👍</span>
-                <span class="rating-icon" title="Dislike">👎</span>
-            </div>
-        """, unsafe_allow_html=True)
+        # Check if the response has already been rated
+        previous_rating = st.session_state['rated_responses'].get(index)  # None, 'liked', or 'disliked'
+
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("👍", key=f"like_button_{index}"):
+                if previous_rating != 'liked':
+                    # User changes to "like" 
+                    if previous_rating == 'disliked':
+                        st.session_state['num_incorrect_answers'] -= 1
+                        st.session_state['user_engagement']['dislikes'] -= 1
+
+                    st.session_state['num_correct_answers'] += 1
+                    st.session_state['user_engagement']['likes'] += 1
+                    st.session_state['rated_responses'][index] = 'liked'
+
+        with col2:
+            if st.button("👎", key=f"dislike_button_{index}"):
+                if previous_rating != 'disliked':
+                    # User changes to "dislike"
+                    if previous_rating == 'liked':
+                        st.session_state['num_correct_answers'] -= 1
+                        st.session_state['user_engagement']['likes'] -= 1
+
+                    st.session_state['num_incorrect_answers'] += 1
+                    st.session_state['user_engagement']['dislikes'] += 1
+                    st.session_state['rated_responses'][index] = 'disliked'
+
+        # Recalculate accuracy rate
+        if st.session_state['num_questions'] > 0:
+            accuracy_rate = (st.session_state['num_correct_answers'] / st.session_state['num_questions']) * 100
+            st.session_state['accuracy_rate'] = accuracy_rate
 
     # # Apply the external CSS file
     # with open("./styles.css") as f:
