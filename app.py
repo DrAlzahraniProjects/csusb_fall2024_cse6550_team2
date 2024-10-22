@@ -143,8 +143,8 @@ def main():
     # Initialize session state for conversation history
     if 'conversation' not in st.session_state:
         st.session_state['conversation'] = []
-        # with st.spinner("Initializing, Please Wait..."):
-        #     vector_store = loading_collection()
+        with st.spinner("Initializing, Please Wait..."):
+            vector_store = initialize_milvus()
 
     if 'messages' not in st.session_state:
         st.session_state['messages'] = [] 
