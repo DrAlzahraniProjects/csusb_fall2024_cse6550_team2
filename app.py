@@ -1,10 +1,10 @@
 import streamlit as st
 import os
 import subprocess
-from RAG import *
+import time
+from Inference import *
 
 st.set_page_config(page_title = "Academic Chatbot - Team2")
-
 
 def main():
 
@@ -38,7 +38,7 @@ def main():
         st.session_state['user_engagement'] = {'likes': 0, 'dislikes': 0}
 
     # CSS styling
-    with open("./styles.css") as f:
+    with open("./style.css") as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
     # Function for animated typing title
@@ -62,9 +62,8 @@ def main():
         """, unsafe_allow_html=True)
 
     # Apply the external CSS file
-    with open("./styles.css") as f:
+    with open("./style.css") as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-
 
     # Sidebar for chat history and statistics
     # Sidebar for chat history and statistics
@@ -143,12 +142,11 @@ def main():
     if 'conversation' not in st.session_state:
         st.session_state['conversation'] = []
         with st.spinner("Initializing, Please Wait..."):
-            vector_store = loading_collection()
+            vector_store = initialize_milvus()
 
     if 'messages' not in st.session_state:
         st.session_state['messages'] = [] 
 
-    # Function to process user input and generate bot response
     # Function to process user input and generate bot response
     def process_input(prompt):
         # Increment question count when a new input is received
@@ -162,7 +160,26 @@ def main():
 
         with st.spinner('Generating Response...'):
             # Generate the response from LLM
-            answer = query_rag(prompt)
+            response,sources, images = invoke_llm_for_response(prompt)
+
+        # Display the response
+        st.subheader("Response:")
+        st.write(response)
+
+          # Display sources only if they exist
+        if sources:
+            st.subheader("Sources:")
+            st.write(sources)
+        else:
+            st.write("No sources found for this response.")
+
+        # Display images only if they exist
+        if images:
+            st.subheader("Associated Images:")
+            for image_path in images:
+                st.image(image_path, caption=os.path.basename(image_path))
+        else:
+            st.write("No associated images found for this response.")
 
         # Calculate response time
         response_time = time.time() - start_time
@@ -170,7 +187,8 @@ def main():
         st.session_state['num_responses'] += 1
 
         # Append bot response as a dictionary with 'role' and 'content'
-        st.session_state['messages'].append({"role": "assistant", "content": answer})
+        st.session_state['messages'].append({"role": "assistant", "content": response})
+
 
     # Handle user input
     if prompt := st.chat_input("Message Team2 academic chatbot"):
@@ -184,13 +202,5 @@ def main():
             else:
                 st.markdown(f"<div class='assistant-message'>{message['content']}</div>", unsafe_allow_html=True)
 
-
 if __name__ == "__main__":
-    # If streamlit instance is running
-    if os.environ.get("STREAMLIT_RUNNING") == "1":
-        main()
-    else:
-        os.environ["STREAMLIT_RUNNING"] = "1"  # Set the environment variable to indicate Streamlit is running
-		#if multiple processes are being started, you must use Popen followed by run subprocess!
-        subprocess.run(["streamlit", "run", __file__, "--server.port=5002", "--server.address=0.0.0.0", "--server.baseUrlPath=/team2"])
-        #subprocess.run(["jupyter", "notebook", "--ip=0.0.0.0", "--port=6002", "--no-browser", "--allow-root"])
+    main()

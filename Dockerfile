@@ -51,9 +51,10 @@ COPY requirements.txt /app/requirements.txt
 # Install Python packages from requirements.txt
 RUN mamba install --yes --file requirements.txt && mamba clean --all -f -y
 
-# Install Python packages not on Mamba DB
-RUN pip install -qU cython
-RUN pip install -qU langchain_milvus langchain-cohere nemo-curator nemoguardrails
+# RUN pip install -qU langchain_milvus langchain-cohere nemo-curator nemoguardrails
+RUN pip install pymilvus[model] langchain langchain_community langchain_huggingface langchain_milvus beautifulsoup4 requests nltk langchain_mistralai sentence-transformers
+
+RUN pip install --upgrade streamlit
 
 # Copy the current directory contents into the container at /app
 COPY . /app
@@ -65,10 +66,11 @@ ENV STREAMLIT_SERVER_PORT=5002
 # Streamlit port
 EXPOSE 5002
 # Jupyter Notebook port
-#EXPOSE 6002
+EXPOSE 6002
 
 # Add the conda environment's bin directory to PATH
 ENV PATH=/opt/miniforge/envs/team2_env/bin:$PATH
 
-ENTRYPOINT ["python"]
-CMD ["app.py"]
+# Run the Streamlit app
+CMD ["streamlit", "run", "app.py", "--server.port=5002", "--server.address=0.0.0.0","--server.baseUrlPath=/team2"]
+

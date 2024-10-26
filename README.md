@@ -42,7 +42,7 @@ git pull origin main
 Make sure Docker is installed and running on your machine. Build and run the Docker image using the following command:
 
 ```
-docker build -t team2_app:latest .
+docker build -t team2_app .
 ```
 
 ```
