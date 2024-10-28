@@ -25,7 +25,13 @@ import nltk
 import os
 from langchain.text_splitter import CharacterTextSplitter
 from urllib.parse import urljoin
+from dotenv import load_dotenv
+from app import corpus_source
 
+# Load environment variables from the .env file
+load_dotenv()
+mistral_api_key = os.getenv("MISTRAL_API_KEY")
+os.environ["MISTRAL_API_KEY"] = mistral_api_key
 nltk.download('punkt')
 
 os.makedirs("milvus_lite", exist_ok=True)
@@ -37,10 +43,7 @@ collection_name = "Academic_Webpages"
 # Create a folder for saving images if it doesn't exist
 os.makedirs("downloaded_images", exist_ok=True)
 
-web_pages = [
-    "https://www.csusb.edu/cse",
-    "https://catalog.csusb.edu/"
-]
+
 
 # Data Scraping
 def load_webpages(url):
@@ -163,9 +166,10 @@ def split_text(text, chunk_size=1500):
 
 # Get the texts data from the web pages with cleaning
 def get_texts_data():
+    from app import corpus_source
     texts = []
 
-    for url in web_pages:
+    for url in corpus_source:
         page_data = load_webpages(url)
         content = page_data["content"]
         images = page_data["images"]
@@ -249,7 +253,7 @@ def initialize_milvus():
         # Create indexes for dense and sparse vectors
         dense_index = {"index_type": "FLAT", "metric_type": "IP"}
         sparse_index = {"index_type": "SPARSE_INVERTED_INDEX", "metric_type": "IP"}
-
+        # "SPARSE_IVF_FLAT"
 
         collection.create_index(dense_field, dense_index)
         collection.create_index(sparse_field, sparse_index)
@@ -327,12 +331,12 @@ def format_docs(docs):
     return formatted_content, formatted_sources, images
 
 def invoke_llm_for_response(query: str):
-    os.environ["MISTRAL_API_KEY"] = "IetRnH5Lb578MdB5Ml0HNTdMBzeHUe7q"
+    
     if not isinstance(query, str):
         raise ValueError("The input query must be a string.")
     
     # Initialize the language model
-    llm = ChatMistralAI(model='open-mistral-7b', ap_key=os.environ["MISTRAL_API_KEY"])
+    llm = ChatMistralAI(model='open-mistral-7b', api_key=mistral_api_key)
 
     # Define the prompt template
     PROMPT_TEMPLATE = """

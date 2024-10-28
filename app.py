@@ -4,6 +4,10 @@ import subprocess
 import time
 from Inference import *
 
+corpus_source = [
+    "https://www.csusb.edu/cse",
+    "https://catalog.csusb.edu/"
+]
 st.set_page_config(page_title = "Academic Chatbot - Team2")
 
 def main():
