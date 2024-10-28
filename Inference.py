@@ -27,8 +27,11 @@ from langchain.text_splitter import CharacterTextSplitter
 from urllib.parse import urljoin
 
 nltk.download('punkt')
+
+os.makedirs("milvus_lite", exist_ok=True)
 MILVUS_URI = "./milvus_lite/milvus_vector.db"
 MODEL_NAME = "sentence-transformers/all-MiniLM-L12-v2"
+
 collection_name = "Academic_Webpages"
 
 # Create a folder for saving images if it doesn't exist
@@ -184,8 +187,6 @@ def get_texts_data():
 
     print(texts)  # For debugging, this will show the cleaned texts with sources and images
     return texts
-
-# Call the function to get cleaned and split texts
 
 # Get the texts data (returns a list of dictionaries with content, source, and images)
 texts = get_texts_data()
