@@ -160,7 +160,7 @@ def load_webpages(url):
         return {"content": "", "source": url, "images": []}
 
 # Split text into smaller chunks
-def split_text(text, chunk_size=1500):
+def split_text(text, chunk_size=2000):
     text_splitter = CharacterTextSplitter(separator=",", chunk_size=chunk_size, chunk_overlap=0)
     return text_splitter.split_text(text)
 
