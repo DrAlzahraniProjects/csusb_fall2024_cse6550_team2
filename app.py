@@ -62,35 +62,35 @@ def main():
             time.sleep(delay)
         return placeholder
 
-    #Function to display rating buttons for each bot response
-    def display_rating_buttons(index):
-        # Check if the response has already been rated
-        previous_rating = st.session_state['rated_responses'].get(index)  # None, 'liked', or 'disliked'
+    def update_likes(index):
+        previous_rating = st.session_state['rated_responses'].get(index)
+        if previous_rating != 'liked':
+            # Update from disliked or neutral to liked
+            if previous_rating == 'disliked':
+                st.session_state['num_incorrect_answers'] -= 1
+                st.session_state['user_engagement']['dislikes'] -= 1
+            st.session_state['num_correct_answers'] += 1
+            st.session_state['user_engagement']['likes'] += 1
+            st.session_state['rated_responses'][index] = 'liked'
 
+    def update_dislikes(index):
+        previous_rating = st.session_state['rated_responses'].get(index)
+        if previous_rating != 'disliked':
+            # Update from liked or neutral to disliked
+            if previous_rating == 'liked':
+                st.session_state['num_correct_answers'] -= 1
+                st.session_state['user_engagement']['likes'] -= 1
+            st.session_state['num_incorrect_answers'] += 1
+            st.session_state['user_engagement']['dislikes'] += 1
+            st.session_state['rated_responses'][index] = 'disliked'
+
+    def display_rating_buttons(index):
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("👍", key=f"like_button_{index}"):
-                if previous_rating != 'liked':
-                    # User changes to "like" 
-                    if previous_rating == 'disliked':
-                        st.session_state['num_incorrect_answers'] -= 1
-                        st.session_state['user_engagement']['dislikes'] -= 1
-
-                    st.session_state['num_correct_answers'] += 1
-                    st.session_state['user_engagement']['likes'] += 1
-                    st.session_state['rated_responses'][index] = 'liked'
-
+            st.button("👍", key=f"like_button_{index}", on_click=update_likes, args=(index,))
         with col2:
-            if st.button("👎", key=f"dislike_button_{index}"):
-                if previous_rating != 'disliked':
-                    # User changes to "dislike"
-                    if previous_rating == 'liked':
-                        st.session_state['num_correct_answers'] -= 1
-                        st.session_state['user_engagement']['likes'] -= 1
+            st.button("👎", key=f"dislike_button_{index}", on_click=update_dislikes, args=(index,))
 
-                    st.session_state['num_incorrect_answers'] += 1
-                    st.session_state['user_engagement']['dislikes'] += 1
-                    st.session_state['rated_responses'][index] = 'disliked'
 
         # Recalculate accuracy rate
         if st.session_state['num_questions'] > 0:
@@ -244,10 +244,10 @@ def main():
               st.markdown(response_content)
             
             # Show source if available
-            if source_url and source_url != "Unknown Source":
-                st.markdown(f"<div class='assistant-message'><strong>Source</strong>: <a href='{source_url}' target='_blank'>{source_url}</a></div>", unsafe_allow_html=True)
-            else:
-                st.markdown(f"<div class='assistant-message'><strong>Source</strong>: Unknown Source</div>", unsafe_allow_html=True)
+            # if source_url and source_url != "Unknown Source":
+            #     st.markdown(f"<div class='assistant-message'><strong>Source</strong>: <a href='{source_url}' target='_blank'>{source_url}</a></div>", unsafe_allow_html=True)
+            # else:
+            #     st.markdown(f"<div class='assistant-message'><strong>Source</strong>: Unknown Source</div>", unsafe_allow_html=True)
     
             # Display rating buttons below the assistant message
             display_rating_buttons(index)
