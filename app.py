@@ -40,6 +40,8 @@ def main():
 
     if 'user_engagement' not in st.session_state:
         st.session_state['user_engagement'] = {'likes': 0, 'dislikes': 0}
+    if 'rated_responses' not in st.session_state or not isinstance(st.session_state['rated_responses'], dict):
+        st.session_state['rated_responses'] = {} 
 
     # CSS styling
     with open("./style.css") as f:
@@ -52,18 +54,49 @@ def main():
         full_text = ""
         for word in words:
             full_text += word + " "
-            placeholder.markdown(f"<h1 style='text-align: center;'>{full_text.strip()}</h1>", unsafe_allow_html=True)
+            # Center and style the title
+            placeholder.markdown(
+                f"<h1 style='text-align: center; font-size: 36px; font-weight: bold; color: #333;'>{full_text.strip()}</h1>",
+                unsafe_allow_html=True
+            )
             time.sleep(delay)
         return placeholder
 
-    # Function to display rating buttons for each bot response
+    def update_likes(index):
+        previous_rating = st.session_state['rated_responses'].get(index)
+        if previous_rating != 'liked':
+            # Update from disliked or neutral to liked
+            if previous_rating == 'disliked':
+                st.session_state['num_incorrect_answers'] -= 1
+                st.session_state['user_engagement']['dislikes'] -= 1
+            st.session_state['num_correct_answers'] += 1
+            st.session_state['user_engagement']['likes'] += 1
+            st.session_state['rated_responses'][index] = 'liked'
+
+    def update_dislikes(index):
+        previous_rating = st.session_state['rated_responses'].get(index)
+        if previous_rating != 'disliked':
+            # Update from liked or neutral to disliked
+            if previous_rating == 'liked':
+                st.session_state['num_correct_answers'] -= 1
+                st.session_state['user_engagement']['likes'] -= 1
+            st.session_state['num_incorrect_answers'] += 1
+            st.session_state['user_engagement']['dislikes'] += 1
+            st.session_state['rated_responses'][index] = 'disliked'
+
     def display_rating_buttons(index):
-        st.markdown(f"""
-            <div class="rating-buttons">
-                <span class="rating-icon" title="Like">👍</span>
-                <span class="rating-icon" title="Dislike">👎</span>
-            </div>
-        """, unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+        with col1:
+            st.button("👍", key=f"like_button_{index}", on_click=update_likes, args=(index,))
+        with col2:
+            st.button("👎", key=f"dislike_button_{index}", on_click=update_dislikes, args=(index,))
+
+
+        # Recalculate accuracy rate
+        if st.session_state['num_questions'] > 0:
+            accuracy_rate = (st.session_state['num_correct_answers'] / st.session_state['num_questions']) * 100
+            st.session_state['accuracy_rate'] = accuracy_rate
+
 
     # Apply the external CSS file
     with open("./style.css") as f:
@@ -138,9 +171,7 @@ def main():
             st.session_state['title_animated'] = True
     else:
         # Display the fixed title at the top left with a logo if input is given
-        st.markdown(f"""
-            <div class="fixed-logo-text">Academic Advisor Chatbot</div>
-        """, unsafe_allow_html=True)
+        st.markdown(f"""<div class="chat-title">Academic Advisor Chatbot</div>""", unsafe_allow_html=True)
 
     # Initialize session state for conversation history
     if 'conversation' not in st.session_state:
@@ -153,58 +184,77 @@ def main():
 
     # Function to process user input and generate bot response
     def process_input(prompt):
-        # Increment question count when a new input is received
         st.session_state['num_questions'] += 1
-
-        # Append user message as a dictionary with 'role' and 'content'
         st.session_state['messages'].append({"role": "user", "content": prompt})
 
-        # Create a placeholder for the response and measure response time
         start_time = time.time()
 
         with st.spinner('Generating Response...'):
-            # Generate the response from LLM
             response,sources, images = invoke_llm_for_response(prompt)
+            
+        print(f"Response: {response}, Source URL: {sources}, Image: {images}")  # Ensure this returns a tuple
+        #    # Display sources only if they exist
+        # if sources:
+        #     st.subheader("Sources:")
+        #     st.write(sources)
+        # else:
+        #     st.write("No sources found for this response.")
 
-        # Display the response
-        st.subheader("Response:")
-        st.write(response)
-
-          # Display sources only if they exist
-        if sources:
-            st.subheader("Sources:")
-            st.write(sources)
-        else:
-            st.write("No sources found for this response.")
-
-        # Display images only if they exist
-        if images:
-            st.subheader("Associated Images:")
-            for image_path in images:
-                st.image(image_path, caption=os.path.basename(image_path))
-        else:
-            st.write("No associated images found for this response.")
-
-        # Calculate response time
+        # # Display images only if they exist
+        # if images:
+        #     st.subheader("Associated Images:")
+        #     for image_path in images:
+        #         st.image(image_path, caption=os.path.basename(image_path))
+        # else:
+        #     st.write("No associated images found for this response.")
         response_time = time.time() - start_time
         st.session_state['total_response_time'] += response_time
         st.session_state['num_responses'] += 1
 
-        # Append bot response as a dictionary with 'role' and 'content'
-        st.session_state['messages'].append({"role": "assistant", "content": response})
+        st.session_state['messages'].append({
+            "role": "assistant",
+            "content": {
+                "response": response,
+                "source": sources
+            }
+        })
+
 
 
     # Handle user input
     if prompt := st.chat_input("Message Team2 academic chatbot"):
         process_input(prompt)
 
-    # Display conversation history
-    for message in st.session_state.get('messages', []):
-        if isinstance(message, dict) and 'role' in message and 'content' in message:
-            if message['role'] == 'user':
-                st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
+    for index, message in enumerate(st.session_state.get('messages', [])):
+        if message['role'] == 'user':
+            # Display user message with right-aligned CSS styling
+            st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
+        else:
+            # Display assistant message with left-aligned CSS styling
+            if isinstance(message['content'], dict):
+                response_content = message['content'].get("response", "")
+                source_url = message['content'].get("source", "Unknown Source")
             else:
-                st.markdown(f"<div class='assistant-message'>{message['content']}</div>", unsafe_allow_html=True)
+                # Fallback if content is a tuple or another type
+                response_content, source_url = message['content'] if isinstance(message['content'], tuple) else (message['content'], "Unknown Source")
+            
+            # Display assistant response content with styling
+            col1, col2 = st.columns(2)
+            with col1:
+              st.markdown(response_content)
+            
+            # Show source if available
+            # if source_url and source_url != "Unknown Source":
+            #     st.markdown(f"<div class='assistant-message'><strong>Source</strong>: <a href='{source_url}' target='_blank'>{source_url}</a></div>", unsafe_allow_html=True)
+            # else:
+            #     st.markdown(f"<div class='assistant-message'><strong>Source</strong>: Unknown Source</div>", unsafe_allow_html=True)
+    
+            # Display rating buttons below the assistant message
+            display_rating_buttons(index)
+    
+
+
+                    
 
 if __name__ == "__main__":
     main()
