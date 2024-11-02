@@ -11,9 +11,6 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # Set the working directory in the container
 WORKDIR /app
 
-# Manually set the MISTRAL_API_KEY
-ENV MISTRAL_API_KEY=IetRnH5Lb578MdB5Ml0HNTdMBzeHUe7q
-
 # Update and install necessary packages
 RUN apt-get update && apt-get install -y \
 	wget \

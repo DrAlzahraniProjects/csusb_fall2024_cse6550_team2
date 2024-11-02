@@ -14,7 +14,8 @@ from pymilvus import (
     FieldSchema,
     WeightedRanker,
     connections,
-    utility
+    utility,
+    
 )
 from langchain.text_splitter import CharacterTextSplitter
 import requests
@@ -27,11 +28,20 @@ from langchain.text_splitter import CharacterTextSplitter
 from urllib.parse import urljoin
 from dotenv import load_dotenv
 from app import corpus_source
+import streamlit as st
+
 
 # Load environment variables from the .env file
 load_dotenv()
-mistral_api_key = os.getenv("MISTRAL_API_KEY")
-os.environ["MISTRAL_API_KEY"] = mistral_api_key
+# Use Streamlit's text input to prompt the user for their Mistral API key
+mistral_api_key = st.text_input("Please enter your Mistral API key:", type="password")
+
+if mistral_api_key:
+    # Set the API key as an environment variable for later use
+    os.environ["MISTRAL_API_KEY"] = mistral_api_key
+else:
+    st.warning("Please enter your Mistral API key to continue.")
+
 nltk.download('punkt')
 
 os.makedirs("milvus_lite", exist_ok=True)
@@ -85,26 +95,6 @@ def load_webpages(url):
         # return ""
         return {"content": "", "source": url, "images": []}
 
-# Function to download and save images locally
-def save_image(img_url):
-    try:
-        img_response = requests.get(img_url)
-        if img_response.status_code == 200:
-            # Create a filename from the image URL
-            img_name = img_url.split("/")[-1]
-            img_path = os.path.join("downloaded_images", img_name)
-            with open(img_path, "wb") as img_file:
-                img_file.write(img_response.content)
-            print(f"Saved image: {img_path}")
-            return img_path  # Return the path of the saved image
-        else:
-            print(f"Failed to download image from {img_url}")
-    except Exception as e:
-        print(f"Error saving image from {img_url}: {e}")
-    return None
-
-
-
 # Function to download and save images locally and return the path
 def save_image(img_url):
     try:
@@ -122,42 +112,6 @@ def save_image(img_url):
     except Exception as e:
         print(f"Error saving image from {img_url}: {e}")
     return None
-
-# Data Scraping with image links
-def load_webpages(url):
-    response = requests.get(url)
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.text, 'html.parser')
-        paragraphs = soup.find_all('p')
-
-        content_list = []
-        image_paths = []
-
-        for p in paragraphs:
-            paragraph_text = p.get_text()
-            links = [a['href'] for a in p.find_all('a', href=True)]
-            if links:
-                combined_text = f"{paragraph_text} (Links: {', '.join(links)})"
-            else:
-                combined_text = paragraph_text
-            content_list.append(combined_text)
-
-        # Download all images present on the page and store their paths
-        images = soup.find_all('img')
-        for img in images:
-            img_src = img.get('src')
-            if img_src:
-                img_url = urljoin(url, img_src)
-                img_path = save_image(img_url)
-                if img_path:
-                    image_paths.append(img_path)
-
-        # Combine content and associate it with image paths
-        content = " ".join(content_list)
-        return {"content": content, "source": url, "images": image_paths}
-    else:
-        print(f"Failed to retrieve {url}")
-        return {"content": "", "source": url, "images": []}
 
 # Split text into smaller chunks
 def split_text(text, chunk_size=2000):
@@ -335,6 +289,8 @@ def invoke_llm_for_response(query: str):
     if not isinstance(query, str):
         raise ValueError("The input query must be a string.")
     
+    if len(query.split()) < 2:  
+        return "Please ask a more specific question.", [], []  # Ensure this return has three items
     # Initialize the language model
     llm = ChatMistralAI(model='open-mistral-7b', api_key=mistral_api_key)
 

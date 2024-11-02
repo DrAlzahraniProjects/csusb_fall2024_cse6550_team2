@@ -1,14 +1,14 @@
 import streamlit as st
-import os
-import subprocess
 import time
 from Inference import *
+from pymilvus import MilvusException
 
+st.set_page_config(page_title = "Academic Chatbot- Team2")
 corpus_source = [
     "https://www.csusb.edu/cse",
     "https://catalog.csusb.edu/"
 ]
-st.set_page_config(page_title = "Academic Chatbot - Team2")
+
 
 def main():
 
@@ -103,7 +103,6 @@ def main():
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
     # Sidebar for chat history and statistics
-    # Sidebar for chat history and statistics
     st.sidebar.title("Metric Summary")
 
     # Number of questions
@@ -188,25 +187,18 @@ def main():
         st.session_state['messages'].append({"role": "user", "content": prompt})
 
         start_time = time.time()
-
+        
         with st.spinner('Generating Response...'):
-            response,sources, images = invoke_llm_for_response(prompt)
-            
-        print(f"Response: {response}, Source URL: {sources}, Image: {images}")  # Ensure this returns a tuple
-        #    # Display sources only if they exist
-        # if sources:
-        #     st.subheader("Sources:")
-        #     st.write(sources)
-        # else:
-        #     st.write("No sources found for this response.")
-
-        # # Display images only if they exist
-        # if images:
-        #     st.subheader("Associated Images:")
-        #     for image_path in images:
-        #         st.image(image_path, caption=os.path.basename(image_path))
-        # else:
-        #     st.write("No associated images found for this response.")
+            try:
+                response,sources,images = invoke_llm_for_response(prompt)
+                print(f"Response: {response}, Source URL: {sources}, Image: {images}") 
+            except MilvusException as e:
+                # Catch specific Milvus vector type mismatch errors
+                if "vector type must be the same" in str(e):
+                    return "There was an issue with the query format. Please try asking a more detailed question."
+                else:
+                    # Handle other types of Milvus-related errors
+                    return f"An error occurred: {e}"
         response_time = time.time() - start_time
         st.session_state['total_response_time'] += response_time
         st.session_state['num_responses'] += 1
@@ -218,8 +210,6 @@ def main():
                 "source": sources
             }
         })
-
-
 
     # Handle user input
     if prompt := st.chat_input("Message Team2 academic chatbot"):
@@ -253,8 +243,6 @@ def main():
             display_rating_buttons(index)
     
 
-
-                    
 
 if __name__ == "__main__":
     main()
