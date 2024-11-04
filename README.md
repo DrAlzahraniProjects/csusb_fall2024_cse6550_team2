@@ -46,7 +46,7 @@ docker build -t team2_app .
 ```
 
 ```
-docker run -d -p 5002:5002 team2_app
+docker run -p 5002:5002 team2_app
 ```
 
 ### Step 5: Access the Application

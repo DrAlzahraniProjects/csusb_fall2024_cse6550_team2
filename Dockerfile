@@ -49,9 +49,7 @@ COPY requirements.txt /app/requirements.txt
 RUN mamba install --yes --file requirements.txt && mamba clean --all -f -y
 
 # RUN pip install -qU langchain_milvus langchain-cohere nemo-curator nemoguardrails
-RUN pip install pymilvus[model] langchain langchain_community langchain_huggingface langchain_milvus beautifulsoup4 requests nltk langchain_mistralai sentence-transformers
-
-RUN pip install --upgrade streamlit
+RUN pip install pymilvus[model] langchain langchain_community langchain_huggingface langchain_milvus beautifulsoup4 requests nltk langchain_mistralai sentence-transformers scipy
 
 # Copy the current directory contents into the container at /app
 COPY . /app
@@ -69,5 +67,6 @@ EXPOSE 6002
 ENV PATH=/opt/miniforge/envs/team2_env/bin:$PATH
 
 # Run the Streamlit app
-CMD ["streamlit", "run", "app.py", "--server.port=5002", "--server.address=0.0.0.0","--server.baseUrlPath=/team2"]
+
+CMD ["streamlit", "run", "app/main.py", "--server.port=5002", "--server.address=0.0.0.0","--server.baseUrlPath=/team2"]
 

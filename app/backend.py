@@ -1,9 +1,7 @@
 from pymilvus import connections, utility, Collection, CollectionSchema, FieldSchema, DataType
-from langchain_community.embeddings import HuggingFaceEmbeddings  # Adjust this import if necessary
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
-from langchain_milvus import Milvus
 from langchain_milvus.retrievers import MilvusCollectionHybridSearchRetriever
 from langchain_milvus.utils.sparse import BM25SparseEmbedding
 from langchain_mistralai.chat_models import ChatMistralAI
@@ -17,150 +15,158 @@ from pymilvus import (
     utility,
     
 )
-from langchain.text_splitter import CharacterTextSplitter
 import requests
 from bs4 import BeautifulSoup
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_milvus.utils.sparse import BM25SparseEmbedding
 import nltk
 import os
+from urllib.parse import urljoin,urlparse
+from scipy.sparse import csr_matrix
+import numpy as np
 from langchain.text_splitter import CharacterTextSplitter
-from urllib.parse import urljoin
-from dotenv import load_dotenv
-from app import corpus_source
-import streamlit as st
 
 
-# Load environment variables from the .env file
-load_dotenv()
-# Use Streamlit's text input to prompt the user for their Mistral API key
-mistral_api_key = st.text_input("Please enter your Mistral API key:", type="password")
-
-if mistral_api_key:
-    # Set the API key as an environment variable for later use
-    os.environ["MISTRAL_API_KEY"] = mistral_api_key
-else:
-    st.warning("Please enter your Mistral API key to continue.")
-
+# Constants and Parameters
+corpus_source = ["https://www.csusb.edu/cse","https://catalog.csusb.edu/"]
 nltk.download('punkt')
-
-os.makedirs("milvus_lite", exist_ok=True)
 MILVUS_URI = "./milvus_lite/milvus_vector.db"
+# Switch between models to get optimized information retrieval on QA tasks
 MODEL_NAME = "sentence-transformers/all-MiniLM-L12-v2"
-
+MODEL_NAME_2 = "sentence-transformers/msmarco-distilbert-base-v3"
 collection_name = "Academic_Webpages"
+output_folder = "csusb_cse_content"
 
-# Create a folder for saving images if it doesn't exist
-os.makedirs("downloaded_images", exist_ok=True)
+# Ensure directories exist
+os.makedirs("milvus_lite", exist_ok=True)
+os.makedirs(output_folder, exist_ok=True)
 
+def get_api_key():
+    """Retrieve the API key from the environment."""
+    api_key = os.getenv("API_KEY")
+    if not api_key:
+        raise ValueError("API key not found. Ensure the API key is set in main.py before proceeding.")
+    return api_key
 
+# Directory to store unreachable URLs
+unreachable_dir = "unreachable_urls"
+os.makedirs(unreachable_dir, exist_ok=True)
 
-# Data Scraping
+# Save unreachable URL to file
+def save_unreachable_url(url):
+    with open(os.path.join(unreachable_dir, "unreachable_urls.txt"), "a") as f:
+        f.write(url + "\n")
+   
+# Function to load webpages and extract content
 def load_webpages(url):
-    response = requests.get(url)
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.text, 'html.parser')
-        paragraphs = soup.find_all('p')
-
-        content_list = []
-        image_paths = []
-        for p in paragraphs:
-            paragraph_text = p.get_text()
-            # Extract all links within the paragraph
-            links = [a['href'] for a in p.find_all('a', href=True)]
-            # Combine the paragraph text with its links
-            if links:
-                combined_text = f"{paragraph_text} (Links: {', '.join(links)})"
-            else:
-                combined_text = paragraph_text
-            content_list.append(combined_text)
-
-        # Download all images present in the page
-        images = soup.find_all('img')
-        for img in images:
-            img_src = img.get('src')
-            if img_src:
-                img_url = urljoin(url, img_src)
-                img_path = save_image(img_url)
-                if img_path:
-                    image_paths.append(img_path)
-                save_image(img_url)
-     # Combine content and associate it with image paths
-        content = " ".join(content_list)
-        return {"content": content, "source": url, "images": image_paths}           
-
-        # return " ".join(content_list)
-    else:
-        print(f"Failed to retrieve {url}")
-        # return ""
-        return {"content": "", "source": url, "images": []}
-
-# Function to download and save images locally and return the path
-def save_image(img_url):
     try:
-        img_response = requests.get(img_url)
-        if img_response.status_code == 200:
-            # Create a filename from the image URL
-            img_name = img_url.split("/")[-1]
-            img_path = os.path.join("downloaded_images", img_name)
-            with open(img_path, "wb") as img_file:
-                img_file.write(img_response.content)
-            print(f"Saved image: {img_path}")
-            return img_path  # Return the path of the saved image
-        else:
-            print(f"Failed to download image from {img_url}")
-    except Exception as e:
-        print(f"Error saving image from {img_url}: {e}")
-    return None
+        response = requests.get(url, timeout=10)  # Setting a timeout
+        response.raise_for_status()  # Check if the request was successful
+    except (requests.exceptions.ConnectTimeout, requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+        # print(f"Failed to connect to {url}")
+        save_unreachable_url(url)
+        return {"content": "", "source": url}
+    except requests.exceptions.HTTPError as err:
+        # print(f"HTTP error for {url}: {err}")
+        save_unreachable_url(url)
+        return {"content": "", "source": url}
 
-# Split text into smaller chunks
-def split_text(text, chunk_size=2000):
+    soup = BeautifulSoup(response.text, 'html.parser')
+    content_list = []
+
+    # Process <li> items and follow links to extract linked page content
+    li_items = soup.find_all('li')
+    for li in li_items:
+        li_text = li.get_text()
+        links = [a['href'] for a in li.find_all('a', href=True)]
+
+        # Fetch content from each link in the <li>
+        for link in links:
+            linked_url = urljoin(url, link)
+            linked_content_data = load_linked_content(linked_url)
+            if linked_content_data:
+                content_list.append(f"{li_text}: {linked_content_data}")
+
+    # Extract text and links from paragraphs in the main page
+    paragraphs = soup.find_all('p')
+    for p in paragraphs:
+        paragraph_text = p.get_text()
+        links = [a['href'] for a in p.find_all('a', href=True)]
+        combined_text = f"{paragraph_text} (Links: {', '.join(links)})" if links else paragraph_text
+        content_list.append(combined_text)
+
+    # Combine content into a single text
+    content = " ".join(content_list)
+    return {"content": content, "source": url}
+
+# Function to load content from linked pages
+def load_linked_content(link_url):
+    try:
+        response = requests.get(link_url, timeout=10)  # Setting a timeout
+        response.raise_for_status()
+    except (requests.exceptions.ConnectTimeout, requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+        # print(f"Failed to connect to {link_url}")
+        save_unreachable_url(link_url)
+        return ""
+    except requests.exceptions.HTTPError as err:
+        # print(f"HTTP error for {link_url}: {err}")
+        save_unreachable_url(link_url)
+        return ""
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+    content_list = []
+
+    # Extract paragraphs and links from the linked page
+    paragraphs = soup.find_all('p')
+    for p in paragraphs:
+        paragraph_text = p.get_text()
+        links = [a['href'] for a in p.find_all('a', href=True)]
+        combined_text = f"{paragraph_text} (Links: {', '.join(links)})" if links else paragraph_text
+        content_list.append(combined_text)
+
+    # Combine the extracted content from the linked page
+    content = " ".join(content_list)
+    return content
+
+# Split text into chunks for further processing
+def split_text(text, chunk_size=20000):
     text_splitter = CharacterTextSplitter(separator=",", chunk_size=chunk_size, chunk_overlap=0)
     return text_splitter.split_text(text)
 
-# Get the texts data from the web pages with cleaning
-def get_texts_data():
-    from app import corpus_source
+# Get texts data from the URLs
+def get_texts_data(corpus_source):
     texts = []
-
     for url in corpus_source:
         page_data = load_webpages(url)
         content = page_data["content"]
-        images = page_data["images"]
         source = page_data["source"]
 
         if content:
-            # Clean up newline characters in the content
             cleaned_content = content.replace("\n", " ")
-            # Split the cleaned content into smaller chunks
             split_contents = split_text(cleaned_content)
 
-            # Create a document entry with each chunk, the source, and associated images
+            # Create a document entry with each chunk and the source
             for split_content in split_contents:
                 texts.append({
                     "page_content": split_content,
-                    "source": source,
-                    "images": images
+                    "source": source
                 })
-
-    print(texts)  # For debugging, this will show the cleaned texts with sources and images
     return texts
 
-# Get the texts data (returns a list of dictionaries with content, source, and images)
-texts = get_texts_data()
+# Extract only the page content from the texts data
 def extract_text_content(texts):
     return [text["page_content"] for text in texts if "page_content" in text]
 
+
+texts = get_texts_data(corpus_source)
 # Extract the cleaned text content from the dictionaries for embedding
 text_contents = extract_text_content(texts)
 
 # Initialize the dense and sparse embeddings
-dense_embedding_func = HuggingFaceEmbeddings(model_name=MODEL_NAME)
+dense_embedding_func = HuggingFaceEmbeddings(model_name=MODEL_NAME_2)
 dense_dim = len(dense_embedding_func.embed_query(text_contents[1]))
-print(dense_dim)
+# print(dense_dim)
 sparse_embedding_func = BM25SparseEmbedding(corpus=text_contents)
 sparse_embedding_func.embed_query(text_contents[1])
-# print(sparse_embedding_func)
 
 # Initialize Milvus and create a collection
 def initialize_milvus():
@@ -184,6 +190,7 @@ def initialize_milvus():
         dense_field = "dense_vector"
         sparse_field = "sparse_vector"
         text_field = "text"
+        source_field = "source"
 
         # Define fields for the collection schema
         fields = [
@@ -197,6 +204,7 @@ def initialize_milvus():
             FieldSchema(name=dense_field, dtype=DataType.FLOAT_VECTOR, dim=dense_dim),
             FieldSchema(name=sparse_field, dtype=DataType.SPARSE_FLOAT_VECTOR),
             FieldSchema(name=text_field, dtype=DataType.VARCHAR, max_length=65_535),
+            FieldSchema(name=source_field, dtype=DataType.VARCHAR, max_length=500) 
         ]
 
         # Create the schema and the collection
@@ -207,13 +215,11 @@ def initialize_milvus():
         # Create indexes for dense and sparse vectors
         dense_index = {"index_type": "FLAT", "metric_type": "IP"}
         sparse_index = {"index_type": "SPARSE_INVERTED_INDEX", "metric_type": "IP"}
-        # "SPARSE_IVF_FLAT"
 
         collection.create_index(dense_field, dense_index)
         collection.create_index(sparse_field, sparse_index)
 
         print(f"Created sparse vector index on '{dense_field} {sparse_field}'.")
-
 
         # Flush to persist changes
         collection.flush()
@@ -221,11 +227,16 @@ def initialize_milvus():
 
     # Insert vectors into the collection
     entities = []
-    for text in text_contents:
+    
+    for text in texts:
+        text_content= str(text["page_content"])
+        source = text["source"]
         entity = {
-            "dense_vector": dense_embedding_func.embed_documents([text])[0],
-            "sparse_vector": sparse_embedding_func.embed_documents([text])[0],
-            "text": text,
+            "dense_vector": dense_embedding_func.embed_documents([text_content])[0],
+            "sparse_vector": sparse_embedding_func.embed_documents([text_content])[0],
+            "text": text_content,
+            "source": source
+            
         }
         entities.append(entity)
 
@@ -237,62 +248,35 @@ def initialize_milvus():
         print(f"Collection '{collection_name}' already contains data. Skipping insertion.")
     return collection
 
-def retreiver():
-  # Ensure `texts` are strings
-    texts = text_contents
-    texts = [text['page_content'] if isinstance(text, dict) and 'page_content' in text else text for text in texts if isinstance(text, str) or isinstance(text, dict)]
-
-    dense_embedding_func = HuggingFaceEmbeddings(model_name=MODEL_NAME)
-    sparse_embedding_func = BM25SparseEmbedding(corpus=texts)
-
-    collection = initialize_milvus()
-
-    dense_field = "dense_vector"
-    sparse_field = "sparse_vector"
-    text_field = "text"
-    sparse_search_params = {"metric_type": "IP"}
-    dense_search_params = {"metric_type": "IP", "params": {}}
-
-    Hybridretriever = MilvusCollectionHybridSearchRetriever(
-        collection=collection,
-        rerank=WeightedRanker(0.5, 0.5),
-        anns_fields=[dense_field, sparse_field],
-        field_embeddings=[dense_embedding_func, sparse_embedding_func],
-        field_search_params=[dense_search_params, sparse_search_params],
-        top_k=3,
-        text_field=text_field,
-    )
-    return Hybridretriever
-
 # Function to format documents with their sources and extract associated images
 def format_docs(docs):
     formatted_content = ""
-    sources = set()  # Use a set to avoid duplicate sources
-    images = []
-
+    sources = set() 
+    
+    # Loop through each document to retrieve text and source
     for doc in docs:
-        content = doc.page_content
-        source = doc.metadata.get('source', 'Unknown source')
-        image_paths = doc.metadata.get('images', [])
+        content = getattr(doc, "text", "")
+        source = doc.metadata.get("source", "Unknown source")
 
         formatted_content += f"{content}\n\n"
-        sources.add(source)  # Collect unique sources
-        images.extend(image_paths)
+        sources.add(source) 
 
     # Combine sources into a formatted string
     formatted_sources = "\n".join(sources)
 
-    return formatted_content, formatted_sources, images
+    return formatted_content, formatted_sources
 
+# Function to invoke the language model for generating a response
 def invoke_llm_for_response(query: str):
-    
+    api_key = get_api_key() 
     if not isinstance(query, str):
         raise ValueError("The input query must be a string.")
     
     if len(query.split()) < 2:  
         return "Please ask a more specific question.", [], []  # Ensure this return has three items
+    
     # Initialize the language model
-    llm = ChatMistralAI(model='open-mistral-7b', api_key=mistral_api_key)
+    llm = ChatMistralAI(model='open-mistral-7b', api_key=api_key)
 
     # Define the prompt template
     PROMPT_TEMPLATE = """
@@ -312,35 +296,35 @@ def invoke_llm_for_response(query: str):
     prompt = PromptTemplate(template=PROMPT_TEMPLATE, input_variables=["context", "question"])
 
     # Ensure `texts` are strings
-    texts = get_texts_data()
+    texts = get_texts_data(corpus_source)
+    if not texts:
+        return "No content found in the specified URLs. Please check your data source.", [], []
     texts = [text['page_content'] if isinstance(text, dict) and 'page_content' in text else text for text in texts if isinstance(text, str) or isinstance(text, dict)]
 
-    dense_embedding_func = HuggingFaceEmbeddings(model_name=MODEL_NAME)
-    sparse_embedding_func = BM25SparseEmbedding(corpus=texts)
-
-    collection = initialize_milvus()
-
+    # Define the fields and search parameters for the Milvus retriever
     dense_field = "dense_vector"
     sparse_field = "sparse_vector"
     text_field = "text"
     sparse_search_params = {"metric_type": "IP"}
     dense_search_params = {"metric_type": "IP", "params": {}}
+    collection = initialize_milvus()
 
+    # Initialize the Milvus retriever
     retreiver = MilvusCollectionHybridSearchRetriever(
         collection=collection,
-        rerank=WeightedRanker(0.5, 0.5),
+        rerank=WeightedRanker(0.7, 0.3),
         anns_fields=[dense_field, sparse_field],
         field_embeddings=[dense_embedding_func, sparse_embedding_func],
         field_search_params=[dense_search_params, sparse_search_params],
-        top_k=3,
+        top_k=5,
         text_field=text_field,
     )
 
     hybrid_results = retreiver.invoke(query)
-    formatted_docs, sources, images = format_docs(hybrid_results)
-    print(formatted_docs, sources, images,"Formatted Docs")
+    # Have to implement re-ranking function for the hybrid retriever for exact query matching
+    formatted_content, formatted_sources = format_docs(hybrid_results)
 
-    context_callable = lambda x: formatted_docs
+    context_callable = lambda x: formatted_content
 
     # Define the RAG chain manually with the specified format
     rag_chain = (
@@ -352,5 +336,8 @@ def invoke_llm_for_response(query: str):
     
     # Invoke the RAG chain with the specific question
     response = rag_chain.invoke({"input": query})
-    print(response, "Response Generated")
-    return response, sources, images
+
+    final_response = f"{response}\n\nSources:\n{formatted_sources}"
+
+    return final_response,formatted_sources
+
