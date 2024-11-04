@@ -162,7 +162,7 @@ texts = get_texts_data(corpus_source)
 text_contents = extract_text_content(texts)
 
 # Initialize the dense and sparse embeddings
-dense_embedding_func = HuggingFaceEmbeddings(model_name=MODEL_NAME_2)
+dense_embedding_func = HuggingFaceEmbeddings(model_name=MODEL_NAME)
 dense_dim = len(dense_embedding_func.embed_query(text_contents[1]))
 # print(dense_dim)
 sparse_embedding_func = BM25SparseEmbedding(corpus=text_contents)
