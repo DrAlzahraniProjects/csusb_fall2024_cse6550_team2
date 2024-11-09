@@ -57,7 +57,5 @@ docker run -p 5002:5002 -p 6002:6002 -v ${PWD}/data:/app/data team2_app
 
 **Jupyter** : http://localhost:6002/team2/jupyter
 
-Jupyter : http://localhost:6002/team2/jupyter
-
 
 
