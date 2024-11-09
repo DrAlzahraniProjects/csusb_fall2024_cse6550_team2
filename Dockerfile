@@ -67,7 +67,7 @@ EXPOSE 6002
 # Add the conda environment's bin directory to PATH
 ENV PATH=/opt/miniforge/envs/team2_env/bin:$PATH
 
-# Run the Streamlit app
+# Run the Streamlit app and jupyter
 
-CMD ["streamlit", "run", "app/main.py", "--server.port=5002", "--server.address=0.0.0.0","--server.baseUrlPath=/team2"]
+CMD ["sh", "-c", "streamlit run app/main.py --server.port=5002 --server.address=0.0.0.0 --server.baseUrlPath=/team2 & jupyter notebook --ip=0.0.0.0 --port=6002 --no-browser --allow-root --NotebookApp.base_url=/team2/jupyter --NotebookApp.token=''"]
 
