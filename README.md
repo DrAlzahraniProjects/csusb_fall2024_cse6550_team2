@@ -46,7 +46,7 @@ docker build -t team2_app .
 ```
 
 ```
-docker run -p 5002:5002 -p 6002:6002 -v ${PWD}/data:/app/data team2_app
+docker run -p 5002:5002 -p 6002:6002 -v ${PWD}/data:/app/data team2_app
 ```
 
 ### Step 5: Access the Application
