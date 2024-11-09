@@ -51,6 +51,7 @@ RUN mamba install --yes --file requirements.txt && mamba clean --all -f -y
 # RUN pip install -qU langchain_milvus langchain-cohere nemo-curator nemoguardrails
 RUN pip install pymilvus[model] langchain langchain_community langchain_huggingface langchain_milvus beautifulsoup4 requests nltk langchain_mistralai sentence-transformers scipy
 
+VOLUME /app/data
 # Copy the current directory contents into the container at /app
 COPY . /app
 
