@@ -1,3 +1,4 @@
 streamlit
 jupyter
 python-dotenv
+scikit-learn
