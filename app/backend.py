@@ -33,6 +33,7 @@ from sentence_transformers import SentenceTransformer
 import nemo
 import nemo.collections.nlp as nemo_nlp
 from nemo.collections.nlp.models import QAModel
+import torch
 
 # Constants and Parameters
 nltk.download('punkt')
@@ -94,27 +95,50 @@ def invoke_llm_for_response(query: str):
     model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
     # Convert the query to embedding
-    query_embedding = np.array(model.encode(query), dtype=np.float32).tolist()  # Ensure float32 format
+    #query_embedding = np.array(model.encode(query), dtype=np.float32).tolist()  # Ensure float32 format
+    query_embedding = model.encode(query)
 
     # Initialize NeMo Curator model
-    nemo_curator = QAModel.from_pretrained(model_name="qa_squad")
+    nemo_curator = QAModel.from_pretrained(model_name="qa_squadv1.1_bertbase")
 
     # Retrieve context from Milvus and select chunks within token limits
     collection = Collection("CSUSB_CSE_Data")  # Initialize your collection
     formatted_content_chunks = retrieve_context(query_embedding, collection)
     context_within_limit = " ".join(formatted_content_chunks[:3])  # Limit context to the first few chunks if needed
 
+
+   # Convert the context to embedding
+    context_embeddings = model.encode(context_within_limit)
+
+    # Concatenate query and context embeddings
+    input_ids = np.concatenate([query_embedding, context_embeddings])
+
+    # Create attention mask (1 for all tokens)
+    attention_mask = np.ones_like(input_ids, dtype=np.int64)
+
+    # Create token type ids (0 for query tokens, 1 for context tokens)
+    token_type_ids = np.concatenate([np.zeros_like(query_embedding, dtype=np.int64), np.ones_like(context_embeddings, dtype=np.int64)])
+
+    # Convert to torch tensors and add batch dimension
+    input_ids = torch.tensor([input_ids], dtype=torch.long).unsqueeze(0)
+    attention_mask = torch.tensor([attention_mask], dtype=torch.long).unsqueeze(0)
+    token_type_ids = torch.tensor([token_type_ids], dtype=torch.long).unsqueeze(0)
+
+    # Initialize NeMo Curator model with an available model name
+    nemo_curator = QAModel.from_pretrained(model_name="qa_squadv1.1_bertbase")
+
+    # Prepare the input for the model
+    inputs = {
+        "input_ids": input_ids,
+        "attention_mask": attention_mask,
+        "token_type_ids": token_type_ids
+    }
     # Generate response using NeMo Curator
-    nemo_response = nemo_curator.infer(
-        queries=[query],
-        contexts=[context_within_limit]
-)
-    
+    nemo_response = nemo_curator(**inputs)
+
     # Process the response
     response = nemo_response[0]['answer']
 
-    # Invoke the RAG chain with the specific question and context
-   # response = rag_chain.invoke({"context": context_within_limit, "question": query})
-
+    # Print and return the final response
     print("Final Response:", response)
     return response

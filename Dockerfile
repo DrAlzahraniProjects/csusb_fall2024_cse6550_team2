@@ -51,6 +51,8 @@ COPY requirements.txt /app/requirements.txt
 # Install Python packages from requirements.txt
 RUN mamba install --yes --file requirements.txt && mamba clean --all -f -y
 
+RUN pip install nemo_toolkit[all]
+
 # RUN pip install -qU langchain_milvus langchain-cohere nemo-curator nemoguardrails
 RUN pip install pymilvus[model] langchain langchain_community langchain_huggingface langchain_milvus beautifulsoup4 requests nltk langchain_mistralai sentence-transformers scipy
 
@@ -58,7 +60,7 @@ RUN pip install pymilvus[model] langchain langchain_community langchain_huggingf
 #RUN pip install huggingface-hub==0.24.0
 
 # Install specific versions of related libraries
-RUN pip install huggingface_hub transformers
+RUN pip install huggingface-hub==0.23.2 transformers==4.40.0
 
 VOLUME /app/data
 # Copy the current directory contents into the container at /app
