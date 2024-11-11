@@ -10,22 +10,6 @@ from backend import *
 
 # Page configuration
 st.set_page_config(page_title="Academic Chatbot - Team2")
-if "liked" not in st.session_state:
-    st.session_state["liked"] = False
-if "disliked" not in st.session_state:
-    st.session_state["disliked"] = False
-
-# Define the feedback functions
-def like_feedback():
-    st.session_state["liked"] = True
-    st.session_state["disliked"] = False
-    st.success("Thanks for your feedback!")
-
-def dislike_feedback():
-    st.session_state["disliked"] = True
-    st.session_state["liked"] = False
-    st.warning("Thanks for your feedback! We'll work on improving.")
-
 # Prompt for API key if not already provided
 if "api_key" not in st.session_state:
     api_key = st.text_input("Please enter your Mistral API key:", type="password")
