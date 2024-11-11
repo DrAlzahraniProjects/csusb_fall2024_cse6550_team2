@@ -107,38 +107,31 @@ def invoke_llm_for_response(query: str):
     context_within_limit = " ".join(formatted_content_chunks[:3])  # Limit context to the first few chunks if needed
 
 
-   # Convert the context to embedding
-    context_embeddings = model.encode(context_within_limit)
+    # Convert embeddings
+    query_embedding_tensor = torch.tensor(query_embedding, dtype=torch.float32)
+    context_embedding_tensor = torch.tensor(model.encode(context_within_limit), dtype=torch.float32)
 
-    # Concatenate query and context embeddings
-    input_ids = np.concatenate([query_embedding, context_embeddings])
+    # Concatenate embeddings
+    input_ids = torch.cat([query_embedding_tensor, context_embedding_tensor], dim=0)
+    attention_mask = torch.ones_like(input_ids, dtype=torch.int64)
+    token_type_ids = torch.cat([
+        torch.zeros_like(query_embedding_tensor, dtype=torch.int64),
+        torch.ones_like(context_embedding_tensor, dtype=torch.int64)
+    ])
 
-    # Create attention mask (1 for all tokens)
-    attention_mask = np.ones_like(input_ids, dtype=np.int64)
+    # Add batch dimension
+    input_ids = input_ids.unsqueeze(0)
+    attention_mask = attention_mask.unsqueeze(0)
+    token_type_ids = token_type_ids.unsqueeze(0)
 
-    # Create token type ids (0 for query tokens, 1 for context tokens)
-    token_type_ids = np.concatenate([np.zeros_like(query_embedding, dtype=np.int64), np.ones_like(context_embeddings, dtype=np.int64)])
-
-    # Convert to torch tensors and add batch dimension
-    input_ids = torch.tensor([input_ids], dtype=torch.long).unsqueeze(0)
-    attention_mask = torch.tensor([attention_mask], dtype=torch.long).unsqueeze(0)
-    token_type_ids = torch.tensor([token_type_ids], dtype=torch.long).unsqueeze(0)
-
-    # Initialize NeMo Curator model with an available model name
-    nemo_curator = QAModel.from_pretrained(model_name="qa_squadv1.1_bertbase")
-
-    # Prepare the input for the model
     inputs = {
         "input_ids": input_ids,
         "attention_mask": attention_mask,
         "token_type_ids": token_type_ids
     }
-    # Generate response using NeMo Curator
+
     nemo_response = nemo_curator(**inputs)
 
-    # Process the response
     response = nemo_response[0]['answer']
-
-    # Print and return the final response
     print("Final Response:", response)
     return response
