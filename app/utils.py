@@ -163,10 +163,9 @@ def initialize_metrics_sidebar():
         # Confusion Matrix and Performance Metrics
         # st.sidebar.write("Confusion Matrix:")
         
-        
-        st.session_state["confusion_matrix_placeholder"] = st.empty()
         st.session_state["sensitivity_placeholder"] = st.empty()
         st.session_state["specificity_placeholder"] = st.empty()
+        st.session_state["confusion_matrix_placeholder"] = st.empty()
         st.session_state["accuracy_placeholder"] = st.empty()
         st.session_state["precision_placeholder"] = st.empty()
         st.session_state["recall_placeholder"] = st.empty()
