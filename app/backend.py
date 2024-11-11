@@ -30,6 +30,10 @@ import pandas as pd
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
 
+import nemo
+import nemo.collections.nlp as nemo_nlp
+from nemo.collections.nlp.models import QAModel
+
 # Constants and Parameters
 nltk.download('punkt')
 # Switch between models to get optimized information retrieval on QA tasks
@@ -92,13 +96,25 @@ def invoke_llm_for_response(query: str):
     # Convert the query to embedding
     query_embedding = np.array(model.encode(query), dtype=np.float32).tolist()  # Ensure float32 format
 
+    # Initialize NeMo Curator model
+    nemo_curator = QAModel.from_pretrained(model_name="qa_squad")
+
     # Retrieve context from Milvus and select chunks within token limits
     collection = Collection("CSUSB_CSE_Data")  # Initialize your collection
     formatted_content_chunks = retrieve_context(query_embedding, collection)
     context_within_limit = " ".join(formatted_content_chunks[:3])  # Limit context to the first few chunks if needed
 
+    # Generate response using NeMo Curator
+    nemo_response = nemo_curator.infer(
+        queries=[query],
+        contexts=[context_within_limit]
+)
+    
+    # Process the response
+    response = nemo_response[0]['answer']
+
     # Invoke the RAG chain with the specific question and context
-    response = rag_chain.invoke({"context": context_within_limit, "question": query})
+   # response = rag_chain.invoke({"context": context_within_limit, "question": query})
 
     print("Final Response:", response)
     return response
