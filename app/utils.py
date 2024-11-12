@@ -205,28 +205,29 @@ def update_metrics():
         specificity = TN / (TN + FP) if (TN + FP) != 0 else 0
         sensitivity = recall  # Sensitivity is equivalent to recall in binary classification
 
+
+
+        # Render Sensitivity and Specificity in black and bold
+        st.session_state["sensitivity_placeholder"].markdown(
+            f"<b style='color:black;'>Sensitivity: {sensitivity * 100:.2f}%</b>", unsafe_allow_html=True
+        )
+        st.session_state["specificity_placeholder"].markdown(
+            f"<b style='color:black;'>Specificity: {specificity * 100:.2f}%</b>", unsafe_allow_html=True
+        )
         # Update confusion matrix and metrics in the sidebar
         st.session_state["confusion_matrix_placeholder"].table(
             pd.DataFrame(cm, columns=["Predicted Negative", "Predicted Positive"], index=["Actual Negative", "Actual Positive"])
         )
 
-        # Render Sensitivity and Specificity in gold, above Accuracy
-        st.session_state["sensitivity_placeholder"].markdown(
-            f"<span style='color:gold;'>Sensitivity: {sensitivity * 100:.2f}%</span>", unsafe_allow_html=True
-        )
-        st.session_state["specificity_placeholder"].markdown(
-            f"<span style='color:gold;'>Specificity: {specificity * 100:.2f}%</span>", unsafe_allow_html=True
-        )
-        
         # Accuracy, Precision, and Recall
         st.session_state["accuracy_placeholder"].write(f"Accuracy: {accuracy * 100:.2f}%")
         st.session_state["precision_placeholder"].write(f"Precision: {precision * 100:.2f}%")
         st.session_state["recall_placeholder"].write(f"Recall: {recall * 100:.2f}%")
 
     else:
+        st.session_state["sensitivity_placeholder"].markdown("<b style='color:black;'>Sensitivity: N/A</b>", unsafe_allow_html=True)
+        st.session_state["specificity_placeholder"].markdown("<b style='color:black;'>Specificity: N/A</b>", unsafe_allow_html=True)
         st.session_state["confusion_matrix_placeholder"].write("Confusion Matrix: No data available.")
-        st.session_state["sensitivity_placeholder"].markdown("<span style='color:gold;'>Sensitivity: N/A</span>", unsafe_allow_html=True)
-        st.session_state["specificity_placeholder"].markdown("<span style='color:gold;'>Specificity: N/A</span>", unsafe_allow_html=True)
         st.session_state["accuracy_placeholder"].write("Accuracy: N/A")
         st.session_state["precision_placeholder"].write("Precision: N/A")
         st.session_state["recall_placeholder"].write("Recall: N/A")
