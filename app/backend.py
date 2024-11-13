@@ -30,10 +30,12 @@ import pandas as pd
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
 
-import nemo
-import nemo.collections.nlp as nemo_nlp
-from nemo.collections.nlp.models import QAModel
-import torch
+from nemoguardrails import RailsConfig, LLMRails
+import nemoguardrails as ng  # Import NeMo Guardrails
+
+# Initialize NeMo Guardrails with the YAML configuration file
+config = ng.RailsConfig.from_path("./config")
+rails = ng.LLMRails(config)
 
 # Constants and Parameters
 nltk.download('punkt')
@@ -41,6 +43,8 @@ nltk.download('punkt')
 # Initialize the embedding model
 model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
+
+# Function to retrieve the API key
 def get_api_key():
     """Retrieve the API key from the environment."""
     api_key = os.getenv("API_KEY")
@@ -95,43 +99,21 @@ def invoke_llm_for_response(query: str):
     model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
     # Convert the query to embedding
-    #query_embedding = np.array(model.encode(query), dtype=np.float32).tolist()  # Ensure float32 format
-    query_embedding = model.encode(query)
-
-    # Initialize NeMo Curator model
-    nemo_curator = QAModel.from_pretrained(model_name="qa_squadv1.1_bertbase")
+    query_embedding = np.array(model.encode(query), dtype=np.float32).tolist()  # Ensure float32 format
 
     # Retrieve context from Milvus and select chunks within token limits
     collection = Collection("CSUSB_CSE_Data")  # Initialize your collection
     formatted_content_chunks = retrieve_context(query_embedding, collection)
     context_within_limit = " ".join(formatted_content_chunks[:3])  # Limit context to the first few chunks if needed
 
+    # Invoke the RAG chain with the specific question and context
+    response = rag_chain.invoke({"context": context_within_limit, "question": query})
 
-    # Convert embeddings
-    query_embedding_tensor = torch.tensor(query_embedding, dtype=torch.float32)
-    context_embedding_tensor = torch.tensor(model.encode(context_within_limit), dtype=torch.float32)
+    # Apply NeMo Guardrails to the response
+    guarded_response = rails.generate(messages=[{
+        "role": "user",
+        "content": response
+    }])
 
-    # Concatenate embeddings
-    input_ids = torch.cat([query_embedding_tensor, context_embedding_tensor], dim=0)
-    attention_mask = torch.ones_like(input_ids, dtype=torch.int64)
-    token_type_ids = torch.cat([
-        torch.zeros_like(query_embedding_tensor, dtype=torch.int64),
-        torch.ones_like(context_embedding_tensor, dtype=torch.int64)
-    ])
-
-    # Add batch dimension
-    input_ids = input_ids.unsqueeze(0)
-    attention_mask = attention_mask.unsqueeze(0)
-    token_type_ids = token_type_ids.unsqueeze(0)
-
-    inputs = {
-        "input_ids": input_ids,
-        "attention_mask": attention_mask,
-        "token_type_ids": token_type_ids
-    }
-
-    nemo_response = nemo_curator(**inputs)
-
-    response = nemo_response[0]['answer']
-    print("Final Response:", response)
-    return response
+    print("Final Response:", guarded_response["content"])
+    return guarded_response["content"]
