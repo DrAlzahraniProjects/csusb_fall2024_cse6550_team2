@@ -30,12 +30,21 @@ import pandas as pd
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
 
+import nemo
+import nemo.collections.nlp as nemo_nlp
+from nemo.collections.nlp.models import QAModel
 from nemoguardrails import RailsConfig, LLMRails
 import nemoguardrails as ng  # Import NeMo Guardrails
+from dotenv import load_dotenv
+
+
+# Load environment variables
+load_dotenv()
 
 # Initialize NeMo Guardrails with the YAML configuration file
-config = ng.RailsConfig.from_path("./config")
-rails = ng.LLMRails(config)
+config_path = "./config/config.yml"  # Adjust path if needed
+config = RailsConfig.from_path(config_path)
+rails = LLMRails(config)
 
 # Constants and Parameters
 nltk.download('punkt')

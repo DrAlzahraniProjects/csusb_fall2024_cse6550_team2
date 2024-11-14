@@ -8,6 +8,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
+RUN pip install torch
+
 # Set the working directory in the container
 WORKDIR /app
 
@@ -35,6 +37,9 @@ RUN arch=$(uname -m) && \
 
 # Add Mambaforge to PATH
 ENV PATH=/opt/miniforge/bin:$PATH
+
+#API_KEY setup
+ENV OPENAI_API_KEY=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
 
 # Create a new environment with Python 3.10
 RUN mamba create -n team2_env python=3.10 -y

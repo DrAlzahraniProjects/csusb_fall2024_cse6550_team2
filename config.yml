@@ -1,0 +1,9 @@
+# config/config.yml
+guardrails:
+  knowledge_base:
+    path: "./config/kb"  # path to your knowledge base folder
+    retrieval:
+      engine: "openai"  # engine type, if using OpenAI for embeddings
+      key: "${OPENAI_API_KEY}"
+    # Optional: Configure chunking, retrieval limits, or guidelines
+    chunk_size: 500  # Define chunk size for retrieval, if needed
