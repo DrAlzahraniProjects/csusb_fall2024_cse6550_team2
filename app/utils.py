@@ -153,19 +153,23 @@ def reset_metrics():
     update_metrics()
 
 
+
 def initialize_metrics_sidebar():
     """Initializes sidebar placeholders for metrics and confusion matrix in an expanded UI."""
+    
     st.sidebar.title("Metric Summary")
     
     with st.sidebar.expander("Confusion Matrix & Performance Metrics", expanded=True):
         # Confusion Matrix and Performance Metrics
         # st.sidebar.write("Confusion Matrix:")
+        
+        st.session_state["sensitivity_placeholder"] = st.empty()
+        st.session_state["specificity_placeholder"] = st.empty()
         st.session_state["confusion_matrix_placeholder"] = st.empty()
         st.session_state["accuracy_placeholder"] = st.empty()
         st.session_state["precision_placeholder"] = st.empty()
         st.session_state["recall_placeholder"] = st.empty()
-        st.session_state["sensitivity_placeholder"] = st.empty()
-        st.session_state["specificity_placeholder"] = st.empty()
+        
     
     with st.sidebar.expander("User Engagement Metrics", expanded=True):
         # Query Metrics for Engagement Summary
@@ -201,29 +205,48 @@ def update_metrics():
         specificity = TN / (TN + FP) if (TN + FP) != 0 else 0
         sensitivity = recall  # Sensitivity is equivalent to recall in binary classification
 
+
+
+        # Render Sensitivity and Specificity in black and bold
+        st.session_state["sensitivity_placeholder"].markdown(
+            f"<b style='color:black;'>Sensitivity: {sensitivity * 100:.2f}%</b>", unsafe_allow_html=True
+        )
+        st.session_state["specificity_placeholder"].markdown(
+            f"<b style='color:black;'>Specificity: {specificity * 100:.2f}%</b>", unsafe_allow_html=True
+        )
         # Update confusion matrix and metrics in the sidebar
         st.session_state["confusion_matrix_placeholder"].table(
             pd.DataFrame(cm, columns=["Predicted Negative", "Predicted Positive"], index=["Actual Negative", "Actual Positive"])
         )
+
+        # Accuracy, Precision, and Recall
         st.session_state["accuracy_placeholder"].write(f"Accuracy: {accuracy * 100:.2f}%")
         st.session_state["precision_placeholder"].write(f"Precision: {precision * 100:.2f}%")
         st.session_state["recall_placeholder"].write(f"Recall: {recall * 100:.2f}%")
-        st.session_state["sensitivity_placeholder"].write(f"Sensitivity: {sensitivity * 100:.2f}%")
-        st.session_state["specificity_placeholder"].write(f"Specificity: {specificity * 100:.2f}%")
+
     else:
+        st.session_state["sensitivity_placeholder"].markdown("<b style='color:black;'>Sensitivity: N/A</b>", unsafe_allow_html=True)
+        st.session_state["specificity_placeholder"].markdown("<b style='color:black;'>Specificity: N/A</b>", unsafe_allow_html=True)
         st.session_state["confusion_matrix_placeholder"].write("Confusion Matrix: No data available.")
         st.session_state["accuracy_placeholder"].write("Accuracy: N/A")
         st.session_state["precision_placeholder"].write("Precision: N/A")
         st.session_state["recall_placeholder"].write("Recall: N/A")
-        st.session_state["sensitivity_placeholder"].write("Sensitivity: N/A")
-        st.session_state["specificity_placeholder"].write("Specificity: N/A")
     
     st.session_state["total_questions_placeholder"].write(f"Total Questions: {st.session_state['num_questions']}")
     st.session_state["correct_answers_placeholder"].write(f"Correct Answers: {st.session_state['num_correct_answers']}")
     st.session_state["incorrect_answers_placeholder"].write(f"Incorrect Answers: {st.session_state['num_incorrect_answers']}")
 
+
+def handle_feedback(index):
+    # Check the feedback value stored in session state for thumbs feedback
+    feedback_value = st.session_state.get(f"feedback_{index}")
+    if feedback_value == 1:
+        update_likes(index)
+    elif feedback_value == 0:
+        update_dislikes(index)
+
 def update_likes(index):
-    """Updates y_pred and metrics when a response is liked."""
+    """Updates metrics when a response is liked."""
     previous_rating = st.session_state['rated_responses'].get(index)
     if previous_rating != 'liked':
         if previous_rating == 'disliked':
@@ -236,7 +259,7 @@ def update_likes(index):
         update_metrics()
 
 def update_dislikes(index):
-    """Updates y_pred and metrics when a response is disliked."""
+    """Updates metrics when a response is disliked."""
     previous_rating = st.session_state['rated_responses'].get(index)
     if previous_rating != 'disliked':
         if previous_rating == 'liked':

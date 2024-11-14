@@ -1,15 +1,15 @@
 # Imports
 from WebCrawler import initialize_and_scrape
-from utils import initialize_metrics_sidebar, initialize_session_state, update_metrics, reset_metrics, typing_title_animation, update_likes, update_dislikes
+from utils import initialize_metrics_sidebar, initialize_session_state, update_metrics, reset_metrics, typing_title_animation, update_likes, update_dislikes, handle_feedback
 import streamlit as st
 import os
 import time
 from pymilvus import MilvusException
 from backend import *
 
+
 # Page configuration
 st.set_page_config(page_title="Academic Chatbot - Team2")
-
 # Prompt for API key if not already provided
 if "api_key" not in st.session_state:
     api_key = st.text_input("Please enter your Mistral API key:", type="password")
@@ -67,17 +67,23 @@ if "API_KEY" in os.environ:
     if prompt := st.chat_input("Message Team2 academic chatbot"):
         process_input(prompt)
 
-    # Display chat messages
+# Display chat messages and feedback
     for index, message in enumerate(st.session_state.get('messages', [])):
         if message['role'] == 'user':
             st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
         else:
             st.markdown(message['content'].get("response", ""))
-            col1, col2 = st.columns([1, 1])
-            with col1:
-                st.button("👍 Like", key=f"like_button_{index}", on_click=update_likes, args=(index,))
-            with col2:
-                st.button("👎 Dislike", key=f"dislike_button_{index}", on_click=update_dislikes, args=(index,))
+
+            # Use st.feedback with "thumbs" option for thumbs-up and thumbs-down feedback
+            st.feedback(
+                "thumbs",
+                key=f"feedback_{index}",
+                on_change=handle_feedback,
+                args=(index,)
+            )
+
+
+
 
     # Sidebar Reset Button
     if st.sidebar.button("Reset Metrics"):
