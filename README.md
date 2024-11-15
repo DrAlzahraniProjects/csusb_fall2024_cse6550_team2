@@ -57,5 +57,21 @@ docker run -p 5002:5002 -p 6002:6002 -v ${PWD}/data:/app/data team2_app
 
 **Jupyter** : http://localhost:6002/team2/jupyter
 
+## SQA Table
+
+| **Answerable**                                                     | **Unanswerable**                                                        |
+|--------------------------------------------------------------------|-------------------------------------------------------------------------|
+| Information about CSE programs?         | What job positions do alumni hold at tech companies?           |
+| What accreditation do computer science programs have?         | How much funding is allocated for research projects in the school?           |
+| How does CSE engage with industry for internships and employment?         | What are the housing options available near the school?           |
+| Who is the current Chair of CSE, and how can they be contacted?         | Explain the prerequisites for courses offered at other universities?           |
+| How can students access remote labs?         | What are the grading percentages for each class in the Computer Science program?           |
+| What is the CSE Club, and what resources does it provide to students?         | Can you give the syllabus for every course offered by CSE?           |
+| What research and internship opportunities are available?         | What types of equipment can be checked out by students?           |
+| How can students apply for the Excels Scholarship?         | Is parking free at the university?           |
+| Where is the School of Computer Science and Engineering located?         | What school activities or events take place in the Winter?           |
+| What are the contact details for the IT support staff?        | What are the most popular elective courses in the school?          |
+
+
 
 
