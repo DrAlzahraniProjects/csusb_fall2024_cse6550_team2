@@ -44,12 +44,12 @@ Make sure Docker is installed and running on your machine. Build and run the Doc
 ```
 docker build -t team2_app .
 ```
+Note: Use Mistral API Key here
 
 ```
-docker run -p 5002:5002 -p 6002:6002 -v ${PWD}/data:/app/data team2_app
+docker run -p 5002:5002 -p 6002:6002 -e API_KEY= -v team2-app
 ```
-
-### Step 5: Access the Application
+### Step 5: Access the Chatbot Application
 
 **Development** : http://localhost:5002/team2/
 

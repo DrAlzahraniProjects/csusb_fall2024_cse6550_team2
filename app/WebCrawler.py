@@ -117,9 +117,9 @@ def initialize_and_scrape():
     scrape_main_page(start_url)
 
     # Save to JSON
-    with open("/app/data/csusb_cse_data.json", "w") as json_file:
-        json.dump(data, json_file, indent=4)
-    print("Data saved to JSON.")
+    # with open(os.path.join(data_dir, "csusb_cse_data.json"), "w") as json_file:
+    #     json.dump(data, json_file, indent=4)
+        # print("Data saved to JSON.")
 
     # Initialize Milvus and insert data
     initialize_milvus(data)
