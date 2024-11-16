@@ -145,8 +145,8 @@ def initialize_and_scrape():
     # print("Sample Data:", json.dumps(data[:2], indent=4))  # Show a sample of the scraped data for debugging
 
     # Save to JSON
-    with open(os.path.join(data_dir, "csusb_cse_data.json"), "w") as json_file:
-        json.dump(data, json_file, indent=4)
+    # with open(os.path.join(data_dir, "csusb_cse_data.json"), "w") as json_file:
+    #     json.dump(data, json_file, indent=4)
         # print("Data saved to JSON.")
 
     # Initialize Milvus and insert data
