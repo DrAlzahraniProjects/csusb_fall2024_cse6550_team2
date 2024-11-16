@@ -44,18 +44,20 @@ Make sure Docker is installed and running on your machine. Build and run the Doc
 ```
 docker build -t team2_app .
 ```
-
+Note: Use TEAM_2_API_KEY provided in canvas discussions 
 ```
-docker run -p 5002:5002 -p 6002:6002 -v ${PWD}/data:/app/data team2_app
+docker run -it -p 5002:5002 -p 6002:6002 -e API_KEY=TEAM_2_API_KEY -v team2_data:/app/data team2-app
 ```
 
-### Step 5: Access the Application
+### Step 5: Access the Chatbot Application
 
-**Development** : http://localhost:5002/team2/
+**Streamlit**
+http://localhost:5002/team2/
 
-**Production** : https://sec.cse.csusb.edu/team2/
+https://sec.cse.csusb.edu/team2/
 
-**Jupyter** : http://localhost:6002/team2/jupyter
+**Jupyter**
+http://localhost:6002/team2/jupyter
 
 ## SQA Table
 

@@ -51,7 +51,9 @@ RUN mamba install --yes --file requirements.txt && mamba clean --all -f -y
 # RUN pip install -qU langchain_milvus langchain-cohere nemo-curator nemoguardrails
 RUN pip install pymilvus[model] langchain langchain_community langchain_huggingface langchain_milvus beautifulsoup4 requests nltk langchain_mistralai sentence-transformers scipy
 
+# Define a named volume for persistent data storage
 VOLUME /app/data
+
 # Copy the current directory contents into the container at /app
 COPY . /app
 
@@ -69,5 +71,5 @@ ENV PATH=/opt/miniforge/envs/team2_env/bin:$PATH
 
 # Run the Streamlit app and jupyter
 
-CMD ["sh", "-c", "streamlit run app/main.py --server.port=5002 --server.address=0.0.0.0 --server.baseUrlPath=/team2 & jupyter notebook --ip=0.0.0.0 --port=6002 --no-browser --allow-root --NotebookApp.base_url=/team2/jupyter --NotebookApp.token=''"]
+CMD ["sh", "-c", "streamlit run app/main.py --server.port=5002 --server.address=0.0.0.0 --server.headless true --server.baseUrlPath=/team2 & jupyter notebook --ip=0.0.0.0 --port=6002 --no-browser --allow-root --NotebookApp.base_url=/team2/jupyter --NotebookApp.token=''"]
 

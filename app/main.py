@@ -1,5 +1,5 @@
 # Imports
-from WebCrawler import initialize_and_scrape
+from web_crawler import initialize_and_scrape
 from utils import initialize_metrics_sidebar, initialize_session_state, update_metrics, reset_metrics, typing_title_animation, update_likes, update_dislikes, handle_feedback
 import streamlit as st
 import os
@@ -7,15 +7,17 @@ import time
 from pymilvus import MilvusException
 from backend import *
 
+print("\nWelcome to the Team2 Academic Chatbot!")
+print("Streamlit App URL: http://localhost:5002/team2")
+print("Jupyter Notebook URL: http://localhost:6002/team2/jupyter\n")
 
 # Page configuration
 st.set_page_config(page_title="Academic Chatbot - Team2")
-# Prompt for API key if not already provided
+
 if "api_key" not in st.session_state:
-    api_key = st.text_input("Please enter your Mistral API key:", type="password")
+    api_key = os.getenv("API_KEY")
     if api_key:
-        st.session_state["api_key"] = api_key
-        os.environ["API_KEY"] = api_key
+        st.session_state["api_key"] = api_key     
 else:
     api_key = st.session_state["api_key"]
 
@@ -72,7 +74,7 @@ if "API_KEY" in os.environ:
         if message['role'] == 'user':
             st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
         else:
-            st.markdown(message['content'].get("response", ""))
+            st.markdown(f"<div class='assistant-response'>{message['content'].get('response', '')}</div>", unsafe_allow_html=True)
 
             # Use st.feedback with "thumbs" option for thumbs-up and thumbs-down feedback
             st.feedback(
@@ -90,4 +92,4 @@ if "API_KEY" in os.environ:
         reset_metrics()  # Reset all metrics and refresh the sidebar with zeroed values
 
 else:
-    st.warning("API key is required to proceed.")
+    st.warning("API key is required to proceed during Run time.")
