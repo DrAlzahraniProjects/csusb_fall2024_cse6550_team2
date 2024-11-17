@@ -6,6 +6,5 @@ secondaryBackgroundColor = '#f9f9f9'
 textColor = '#0d0d0d'
 font = "sans serif"
 
-
 [browser]
 gatherUsageStats = false

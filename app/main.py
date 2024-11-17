@@ -1,5 +1,5 @@
 # Imports
-from WebCrawler import initialize_and_scrape
+from web_crawler import initialize_and_scrape
 from utils import initialize_metrics_sidebar, initialize_session_state, update_metrics, reset_metrics, typing_title_animation, update_likes, update_dislikes, handle_feedback
 import streamlit as st
 import os
@@ -12,7 +12,7 @@ from backend import *
 st.set_page_config(page_title="Academic Chatbot - Team2")
 # Prompt for API key if not already provided
 if "api_key" not in st.session_state:
-    api_key = st.text_input("Please enter your Mistral API key:", type="password")
+    api_key = os.environ.get("API_KEY")
     if api_key:
         st.session_state["api_key"] = api_key
         os.environ["API_KEY"] = api_key
@@ -51,7 +51,7 @@ if "API_KEY" in os.environ:
         st.session_state['messages'].append({"role": "user", "content": prompt})
 
         start_time = time.time()
-        with st.spinner('Generating Response...'):
+        with st.spinner('Generating Response, Please Wait...'):
             try:
                 response = invoke_llm_for_response(prompt)
             except MilvusException as e:
@@ -72,7 +72,7 @@ if "API_KEY" in os.environ:
         if message['role'] == 'user':
             st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
         else:
-            st.markdown(message['content'].get("response", ""))
+            st.markdown(message['content'].get("response", ""),unsafe_allow_html=True)
 
             # Use st.feedback with "thumbs" option for thumbs-up and thumbs-down feedback
             st.feedback(
