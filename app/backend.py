@@ -70,6 +70,7 @@ def extract_keywords(query, context):
     return vectorizer.get_feature_names_out()
 
 def format_response_with_highlights(response, keywords, sources):
+    # print("Response:", response)
     """Add a single clickable source to the response."""
     if sources and sources[0]:  # Check if a single source is available
         response += f"\n\n<b>Sources:</b> <a href='{sources[0]}' target='_blank'>{sources[0]}</a>"
@@ -78,7 +79,7 @@ def format_response_with_highlights(response, keywords, sources):
 
 # Function to invoke the language model for generating a response
 def invoke_llm_for_response(query):
-    """Generate a response with highlighted keywords and exclude sources if no context is found."""
+    """Generate a response with highlighted keywords and exclude sources if no information is provided."""
     llm = ChatMistralAI(model='open-mistral-7b', api_key=os.getenv("API_KEY"))
 
     # Define the prompt template
@@ -111,12 +112,9 @@ def invoke_llm_for_response(query):
         selected_chunks.append(chunk["text_content"])
         current_tokens += chunk_tokens
 
-    # Prepare context
+    # Prepare context and deduplicate sources
     context = " ".join(selected_chunks)
-    sources = list({chunk["url"] for chunk in context_chunks})  # Deduplicate URLs using a set
-
-    # Use only the first source
-    single_source = sources[0] if sources else None
+    sources = list({chunk["url"] for chunk in context_chunks}) if selected_chunks else []
 
     # If no context is found, pass a generic fallback context to the LLM
     if not selected_chunks:
@@ -125,15 +123,28 @@ def invoke_llm_for_response(query):
             "Generate a general response to help the user."
         )
         response = rag_chain.invoke({"context": fallback_context, "question": query})
-        # Return response without sources
+        # Do not include sources in the response
         return format_response_with_highlights(response, [], [])
 
     # Generate the response using the retrieved context
     response = rag_chain.invoke({"context": context, "question": query})
 
-    # Highlight keywords and format response
-    keywords = extract_keywords(query, response)
-    final_response = format_response_with_highlights(response, keywords, [single_source] if single_source else [])
+    # Define fallback phrases to exclude sources
+    fallback_phrases = [
+        "The context does not provide information",
+        "The context does not provide specific information",
+        "you may want to visit the university's official website"
+    ]
 
-    return final_response
+    # Check if response contains any fallback phrases
+    if any(phrase in response for phrase in fallback_phrases) or not response.strip():
+        # Return the response without sources
+        final_response =format_response_with_highlights(response, [], [])
+        return final_response
+    else:
+        # Highlight keywords and format response
+        keywords = extract_keywords(query, response)
+        final_response = format_response_with_highlights(response, keywords, sources)
+        return final_response
+
 
