@@ -1,38 +1,19 @@
-from pymilvus import connections, utility, Collection, CollectionSchema, FieldSchema, DataType
+from pymilvus import Collection
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
-from WebCrawler import scrape_main_page
-from langchain_milvus.retrievers import MilvusCollectionHybridSearchRetriever
-from langchain_milvus.utils.sparse import BM25SparseEmbedding
 from langchain_mistralai.chat_models import ChatMistralAI
-from pymilvus import (
-    Collection,
-    CollectionSchema,
-    DataType,
-    FieldSchema,
-    WeightedRanker,
-    connections,
-    utility,
-    
-)
-import requests
-from bs4 import BeautifulSoup
-from langchain_huggingface import HuggingFaceEmbeddings
 import nltk
 import os
-from urllib.parse import urljoin,urlparse
-from scipy.sparse import csr_matrix
 import numpy as np
-from langchain.text_splitter import CharacterTextSplitter
-from pymilvus import connections, CollectionSchema, FieldSchema, DataType, Collection, utility
 import pandas as pd
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Constants and Parameters
 nltk.download('punkt')
-# Switch between models to get optimized information retrieval on QA tasks
+
 # Initialize the embedding model
 model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
@@ -45,60 +26,114 @@ def get_api_key():
 
 # Function to retrieve and split context from Milvus
 def retrieve_context(query_embedding, collection: Collection, limit=5):
+    """Retrieve relevant context from Milvus along with their source URLs."""
     search_params = {"metric_type": "L2", "params": {"nprobe": 10}}
     results = collection.search(
         data=[query_embedding],
         anns_field="embedding",
         param=search_params,
         limit=limit,
-        output_fields=["text_content"]
+        output_fields=["text_content", "url"]
     )
 
-    # Combine retrieved documents into a single context string
-    combined_context = " ".join([res.text_content for result in results for res in result])
-    # Text splitter configuration to chunk context text
+    # Prepare text splitter
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,  # Set chunk size based on LLM's token limit
-        chunk_overlap=100  # Set overlap to ensure continuity between chunks
+        chunk_size=1000,  # Chunk size to fit within token limits
+        chunk_overlap=100  # Overlap for continuity between chunks
     )
-    # Split combined context into manageable chunks
-    context_chunks = text_splitter.split_text(combined_context)
+
+    # Prepare context chunks with sources
+    context_chunks = []
+    for result in results[0]:  # Iterate through the top results
+        # Access fields directly
+        text_content = result.entity.get("text_content")
+        url = result.entity.get("url")
+
+        if not text_content or not url:
+            continue
+
+        # Split text content into manageable chunks
+        text_splits = text_splitter.split_text(text_content)
+
+        # Add each chunk with its associated URL
+        for split in text_splits:
+            context_chunks.append({"text_content": split, "url": url})
+
+    # print("Retrieved Context Chunks:", context_chunks)
     return context_chunks
 
+def extract_keywords(query, context):
+    """Extract keywords dynamically using TF-IDF."""
+
+    vectorizer = TfidfVectorizer(stop_words="english", max_features=5)
+    vectorizer.fit([query, context])
+    return vectorizer.get_feature_names_out()
+
+def format_response_with_highlights(response, keywords, sources):
+    """Add a single clickable source to the response."""
+    if sources and sources[0]:  # Check if a single source is available
+        response += f"\n\n<b>Sources:</b> <a href='{sources[0]}' target='_blank'>{sources[0]}</a>"
+
+    return response
+
 # Function to invoke the language model for generating a response
-def invoke_llm_for_response(query: str):
-    api_key = get_api_key()
-    if not isinstance(query, str):
-        raise ValueError("The input query must be a string.")
-    
-    # Initialize the language model
-    llm = ChatMistralAI(model='open-mistral-7b', api_key=api_key)
-    
-    # Define prompt template
+def invoke_llm_for_response(query):
+    """Generate a response with highlighted keywords and exclude sources if no context is found."""
+    llm = ChatMistralAI(model='open-mistral-7b', api_key=os.getenv("API_KEY"))
+
+    # Define the prompt template
     prompt = PromptTemplate(
         input_variables=["context", "question"],
         template="Based on the context: {context}\nAnswer the question: {question}"
     )
-
-    # Define the RAG Chain
     rag_chain = (
         {"context": RunnablePassthrough(), "question": RunnablePassthrough()}
         | prompt
         | llm
         | StrOutputParser()
     )
-    model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
-    # Convert the query to embedding
-    query_embedding = np.array(model.encode(query), dtype=np.float32).tolist()  # Ensure float32 format
+    # Generate embedding for the query
+    query_embedding = np.array(model.encode(query), dtype=np.float32).tolist()
 
-    # Retrieve context from Milvus and select chunks within token limits
-    collection = Collection("CSUSB_CSE_Data")  # Initialize your collection
-    formatted_content_chunks = retrieve_context(query_embedding, collection)
-    context_within_limit = " ".join(formatted_content_chunks[:3])  # Limit context to the first few chunks if needed
+    # Retrieve contexts with associated sources
+    collection = Collection("CSUSB_CSE_Data")
+    context_chunks = retrieve_context(query_embedding, collection)
 
-    # Invoke the RAG chain with the specific question and context
-    response = rag_chain.invoke({"context": context_within_limit, "question": query})
+    # Combine chunks while keeping within the token limit
+    max_tokens = 3000  # Model's max input tokens (adjust for safety)
+    current_tokens = 0
+    selected_chunks = []
+    for chunk in context_chunks:
+        chunk_tokens = len(chunk["text_content"].split())  # Approximation of tokens
+        if current_tokens + chunk_tokens > max_tokens:
+            break
+        selected_chunks.append(chunk["text_content"])
+        current_tokens += chunk_tokens
 
-    print("Final Response:", response)
-    return response
+    # Prepare context
+    context = " ".join(selected_chunks)
+    sources = list({chunk["url"] for chunk in context_chunks})  # Deduplicate URLs using a set
+
+    # Use only the first source
+    single_source = sources[0] if sources else None
+
+    # If no context is found, pass a generic fallback context to the LLM
+    if not selected_chunks:
+        fallback_context = (
+            "The context does not provide specific information relevant to the query. "
+            "Generate a general response to help the user."
+        )
+        response = rag_chain.invoke({"context": fallback_context, "question": query})
+        # Return response without sources
+        return format_response_with_highlights(response, [], [])
+
+    # Generate the response using the retrieved context
+    response = rag_chain.invoke({"context": context, "question": query})
+
+    # Highlight keywords and format response
+    keywords = extract_keywords(query, response)
+    final_response = format_response_with_highlights(response, keywords, [single_source] if single_source else [])
+
+    return final_response
+

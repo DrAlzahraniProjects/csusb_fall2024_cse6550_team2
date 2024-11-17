@@ -1,4 +1,6 @@
-import json
+corpus_source = "https://www.csusb.edu"
+
+
 import time
 from pymilvus import connections, utility, Collection, CollectionSchema, FieldSchema, DataType
 from sentence_transformers import SentenceTransformer
@@ -6,10 +8,9 @@ from bs4 import BeautifulSoup
 import requests
 
 # Base configuration
-base_url = "https://www.csusb.edu"
-start_url = f"{base_url}/cse"
+
+start_url = f"{corpus_source}/cse"
 MILVUS_URI = "milvus_vector.db"
-data = []
 
 def scrape_page(url, section_name):
     """Scrape individual page and add to data list."""
@@ -47,7 +48,7 @@ def scrape_page(url, section_name):
             src = img.get("src")
             alt = img.get("alt", "No description")
             if src:
-                full_url = src if src.startswith("http") else base_url + src
+                full_url = src if src.startswith("http") else corpus_source + src
                 page_data["content"].append({"type": "image", "alt": alt, "url": full_url})
 
         # Extract links
@@ -55,31 +56,39 @@ def scrape_page(url, section_name):
             href = link["href"]
             text = link.get_text(strip=True)
             if text and (href.startswith("http") or href.startswith("/")):
-                full_url = href if href.startswith("http") else base_url + href
+                full_url = href if href.startswith("http") else corpus_source + href
                 page_data["content"].append({"type": "link", "text": text, "url": full_url})
-
-        data.append(page_data)
         time.sleep(1)
-
+        return page_data
     except Exception as e:
         print(f"Error scraping {url}: {e}")
 
 def scrape_main_page(start_url):
     """Scrape main page and all linked pages in the navigation."""
     visited_links = set()
-    response = requests.get(start_url)
-    soup = BeautifulSoup(response.text, "html.parser")
-    nav_links = soup.select("a[href]")
+    data = []  # Collect all scraped data here
 
-    for link in nav_links:
-        href = link.get("href")
-        section_name = link.get_text(strip=True)
-        if href and (href.startswith("/cse") or (base_url in href and "cse" in href)):
-            full_url = href if href.startswith("http") else base_url + href
-            if full_url not in visited_links:
-                visited_links.add(full_url)
-                print(f"Scraping section '{section_name}' at URL: {full_url}")
-                scrape_page(full_url, section_name)
+    try:
+        response = requests.get(start_url)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "html.parser")
+        nav_links = soup.select("a[href]")
+
+        for link in nav_links:
+            href = link.get("href")
+            section_name = link.get_text(strip=True)
+            if href and (href.startswith("/cse") or (corpus_source in href and "cse" in href)):
+                full_url = href if href.startswith("http") else corpus_source + href
+                if full_url not in visited_links:
+                    visited_links.add(full_url)
+                    # print(f"Scraping section '{section_name}' at URL: {full_url}")
+                    page_data = scrape_page(full_url, section_name)
+                    if page_data:
+                        data.append(page_data)  # Add the scraped page data to the list
+    except Exception as e:
+        print(f"Error scraping {start_url}: {e}")
+
+    return data  # Return the collected data
 
 def initialize_milvus(data):
     """Initialize Milvus, create collection, and insert data."""
@@ -89,7 +98,8 @@ def initialize_milvus(data):
     fields = [
         FieldSchema(name="id", dtype=DataType.INT64, is_primary=True),
         FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=384),
-        FieldSchema(name="text_content", dtype=DataType.VARCHAR, max_length=50000)
+        FieldSchema(name="text_content", dtype=DataType.VARCHAR, max_length=50000),
+        FieldSchema(name="url", dtype=DataType.VARCHAR, max_length=200)
     ]
     schema = CollectionSchema(fields, "CSUSB_CSE_Collection")
 
@@ -107,21 +117,21 @@ def initialize_milvus(data):
         text_content = " ".join([content.get("text", "") for content in item.get("content", [])])
         text_content = text_content[:MAX_TEXT_LENGTH]
         embedding = model.encode(text_content).tolist()
-        collection.insert([[idx], [embedding], [text_content]])
+        url = item["url"]
+        collection.insert([[idx], [embedding], [text_content],[url]])
 
     print("Data insertion completed.")
 
 def initialize_and_scrape():
     """Wrapper function to perform the entire workflow."""
     # Scrape data
-    scrape_main_page(start_url)
-
-    # Save to JSON
-    # with open(os.path.join(data_dir, "csusb_cse_data.json"), "w") as json_file:
-    #     json.dump(data, json_file, indent=4)
-        # print("Data saved to JSON.")
-
+    data = scrape_main_page(start_url)
+    if not data:
+        print("No data was scraped. Please check the scraper.")
+        return
+    
+    print(f"Total pages scraped: {len(data)}")
+   
     # Initialize Milvus and insert data
     initialize_milvus(data)
-
     
