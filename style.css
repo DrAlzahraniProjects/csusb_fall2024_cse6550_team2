@@ -1,3 +1,4 @@
+/* Chatbot input and output related css */
 div[data-testid="stVerticalBlock"] div:has(div.fixed-header) {
     text-align: center;
     position: sticky;
