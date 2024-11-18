@@ -143,11 +143,11 @@ def initialize_metrics_sidebar():
     st.sidebar.title("Confusion Matrix")
 
     with st.sidebar.expander("Confusion Matrix & Performance Metrics", expanded=True):
-        # Confusion Matrix and Performance Metrics
-        # st.sidebar.write("Confusion Matrix:")
+    # Confusion Matrix and Performance Metrics
+    # st.sidebar.write("Confusion Matrix:")
     # with st.sidebar.expander("Confusion Matrix & Performance Metrics", expanded=True):
-    #     # Confusion Matrix and Performance Metrics
-    #     st.sidebar.write("Confusion Matrix:")
+    # Confusion Matrix and Performance Metrics
+    # st.sidebar.write("Confusion Matrix:")
 
         st.session_state["sensitivity_placeholder"] = st.empty()
         st.session_state["specificity_placeholder"] = st.empty()
