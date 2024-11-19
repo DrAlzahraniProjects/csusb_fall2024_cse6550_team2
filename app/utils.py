@@ -134,49 +134,47 @@ def reset_metrics():
     st.session_state['rated_responses'] = {}
     st.session_state["y_true"] = []
     st.session_state["y_pred"] = []
-    st.session_state['total_response_time'] = 0
+    st.session_state['total_response_time'] = 0 
     
     # Clear confusion matrix and performance metrics
-    st.session_state["confusion_matrix_placeholder"].empty()
-    st.session_state["accuracy_placeholder"].empty()
-    st.session_state["precision_placeholder"].empty()
-    st.session_state["recall_placeholder"].empty()
-    st.session_state["sensitivity_placeholder"].empty()
-    st.session_state["specificity_placeholder"].empty()
+    if "confusion_matrix_placeholder" in st.session_state:
+        st.session_state["confusion_matrix_placeholder"].empty()
+    if "accuracy_placeholder" in st.session_state:
+        st.session_state["accuracy_placeholder"].empty()
+    if "precision_placeholder" in st.session_state:
+        st.session_state["precision_placeholder"].empty()
+    if "recall_placeholder" in st.session_state:
+        st.session_state["recall_placeholder"].empty()
+    if "sensitivity_placeholder" in st.session_state:
+        st.session_state["sensitivity_placeholder"].empty()
+    if "specificity_placeholder" in st.session_state:
+        st.session_state["specificity_placeholder"].empty()
     
     # Clear engagement metrics placeholders
-    st.session_state["total_questions_placeholder"].empty()
-    st.session_state["correct_answers_placeholder"].empty()
-    st.session_state["incorrect_answers_placeholder"].empty()
+    if "total_questions_placeholder" in st.session_state:
+        st.session_state["total_questions_placeholder"].empty()
+    if "correct_answers_placeholder" in st.session_state:
+        st.session_state["correct_answers_placeholder"].empty()
+    if "incorrect_answers_placeholder" in st.session_state:
+        st.session_state["incorrect_answers_placeholder"].empty()
     
     # Optionally, you could call `update_metrics()` here if you want to immediately reset the values to zero in the sidebar
     update_metrics()
 
 
-
 def initialize_metrics_sidebar():
     """Initializes sidebar placeholders for metrics and confusion matrix in an expanded UI."""
     
-    st.sidebar.title("Metric Summary")
-    
-    with st.sidebar.expander("Confusion Matrix & Performance Metrics", expanded=True):
-        # Confusion Matrix and Performance Metrics
-        # st.sidebar.write("Confusion Matrix:")
-        
-        st.session_state["sensitivity_placeholder"] = st.empty()
-        st.session_state["specificity_placeholder"] = st.empty()
-        st.session_state["confusion_matrix_placeholder"] = st.empty()
-        st.session_state["accuracy_placeholder"] = st.empty()
-        st.session_state["precision_placeholder"] = st.empty()
-        st.session_state["recall_placeholder"] = st.empty()
-        
-    
-    with st.sidebar.expander("User Engagement Metrics", expanded=True):
-        # Query Metrics for Engagement Summary
-        st.sidebar.write("Query Metrics:")
-        st.session_state["total_questions_placeholder"] = st.empty()
-        st.session_state["correct_answers_placeholder"] = st.empty()
-        st.session_state["incorrect_answers_placeholder"] = st.empty()
+    # Sidebar title with "Confusion Matrix" and a link icon next to it
+    st.sidebar.markdown(
+        """
+        <h2 style='display: inline;'>Confusion Matrix</h2>
+        <a href="https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team2/blob/main/README.md" target="_blank" style="text-decoration: none;">
+            🔗
+        </a>
+        """,
+        unsafe_allow_html=True
+    )
     
     # Initial update to display zeroed or default metrics
     update_metrics()
@@ -184,6 +182,19 @@ def initialize_metrics_sidebar():
 
 def update_metrics():
     """Updates metrics such as confusion matrix, accuracy, specificity, precision, recall, and sensitivity in the sidebar."""
+     # Function to apply color based on cell content
+    def color_cells(val):
+        """
+        Apply color based on cell content or other logic.
+        Args:
+            val (str): The value in the cell
+        Returns:
+            str : The color to apply to the cell
+        """
+        if "TP" in val or "TN" in val:
+            return "background-color: #f1f1f1; color: #444444"
+        return "background-color: #f9f9f9; color: #444444"
+    
     if st.session_state["y_true"] and st.session_state["y_pred"]:
         adjusted_y_true = st.session_state["y_true"][:len(st.session_state["y_pred"])]
         cm = confusion_matrix(adjusted_y_true, st.session_state["y_pred"], labels=[0, 1])
@@ -205,37 +216,73 @@ def update_metrics():
         specificity = TN / (TN + FP) if (TN + FP) != 0 else 0
         sensitivity = recall  # Sensitivity is equivalent to recall in binary classification
 
+        # Display important metrics in the sidebar
+        important_metrics = [
+            ("Sensitivity", sensitivity),
+            ("Specificity", specificity),
+        ]
+        imp_container = st.sidebar.empty()
+        with imp_container.container():
+            for metric_name, metric_value in important_metrics:
+                st.markdown(f"<div class='important-metrics'>{metric_name}: {metric_value:.2f}</div>", unsafe_allow_html=True)
 
+        # Create a DataFrame for the confusion matrix
+        data = {
+            'Predicted +': [f"{TP} (TP)", f"{FP} (FP)"],
+            'Predicted -': [f"{FN} (FN)", f"{TN} (TN)"],
+        }
+        index_labels = ["Actual Ans", "Actual Unans"]
+        df = pd.DataFrame(data, index=index_labels)
 
-        # Render Sensitivity and Specificity in black and bold
-        st.session_state["sensitivity_placeholder"].markdown(
-            f"<b style='color:black;'>Sensitivity: {sensitivity * 100:.2f}%</b>", unsafe_allow_html=True
-        )
-        st.session_state["specificity_placeholder"].markdown(
-            f"<b style='color:black;'>Specificity: {specificity * 100:.2f}%</b>", unsafe_allow_html=True
-        )
-        # Update confusion matrix and metrics in the sidebar
-        st.session_state["confusion_matrix_placeholder"].table(
-            pd.DataFrame(cm, columns=["Predicted Negative", "Predicted Positive"], index=["Actual Negative", "Actual Positive"])
-        )
+        # Style the DataFrame using .applymap
+        styled_df = df.style.applymap(color_cells)
+        st.sidebar.write(styled_df.to_html(), unsafe_allow_html=True)
 
-        # Accuracy, Precision, and Recall
-        st.session_state["accuracy_placeholder"].write(f"Accuracy: {accuracy * 100:.2f}%")
-        st.session_state["precision_placeholder"].write(f"Precision: {precision * 100:.2f}%")
-        st.session_state["recall_placeholder"].write(f"Recall: {recall * 100:.2f}%")
+        # Display normal metrics in the sidebar
+        performance_metrics = [
+            ("Accuracy", accuracy),
+            ("Precision", precision),
+            ("F1 Score", 2 * (precision * recall) / (precision + recall) if (precision + recall) != 0 else 0),
+        ]
+        normal_container = st.sidebar.empty()
+        time.sleep(0.5)
+        with normal_container.container():
+            for metric_name, metric_value in performance_metrics:
+                st.markdown(f"<div class='normal-metrics'>{metric_name}: {metric_value:.2f}</div>", unsafe_allow_html=True)
 
     else:
-        st.session_state["sensitivity_placeholder"].markdown("<b style='color:black;'>Sensitivity: N/A</b>", unsafe_allow_html=True)
-        st.session_state["specificity_placeholder"].markdown("<b style='color:black;'>Specificity: N/A</b>", unsafe_allow_html=True)
-        st.session_state["confusion_matrix_placeholder"].write("Confusion Matrix: No data available.")
-        st.session_state["accuracy_placeholder"].write("Accuracy: N/A")
-        st.session_state["precision_placeholder"].write("Precision: N/A")
-        st.session_state["recall_placeholder"].write("Recall: N/A")
-    
-    st.session_state["total_questions_placeholder"].write(f"Total Questions: {st.session_state['num_questions']}")
-    st.session_state["correct_answers_placeholder"].write(f"Correct Answers: {st.session_state['num_correct_answers']}")
-    st.session_state["incorrect_answers_placeholder"].write(f"Incorrect Answers: {st.session_state['num_incorrect_answers']}")
+        # Display important metrics in the sidebar
+        important_metrics = [
+            ("Sensitivity", "N/A"),
+            ("Specificity", "N/A"),
+        ]
+        imp_container = st.sidebar.empty()
+        with imp_container.container():
+            for metric_name, metric_value in important_metrics:
+                st.markdown(f"<div class='important-metrics'>{metric_name}: {metric_value}</div>", unsafe_allow_html=True)
 
+        # Create a DataFrame for the confusion matrix
+        data = {
+            'Predicted +': [f"NA (TP)", f"NA (FP)"],
+            'Predicted -': [f"NA (FN)", f"NA (TN)"],
+        }
+        index_labels = ["Actual Ans", "Actual Unans"]
+        df = pd.DataFrame(data, index=index_labels)
+
+        # Style the DataFrame using .applymap
+        styled_df = df.style.applymap(color_cells)
+        st.sidebar.write(styled_df.to_html(), unsafe_allow_html=True)
+
+        # Display normal metrics in the sidebar
+        performance_metrics = [
+            ("Accuracy", "N/A"),
+            ("Precision", "N/A"),
+            ("F1 Score", "N/A"),
+        ]
+        normal_container = st.sidebar.empty()
+        with normal_container.container():
+            for metric_name, metric_value in performance_metrics:
+                st.markdown(f"<div class='normal-metrics'>{metric_name}: {metric_value}</div>", unsafe_allow_html=True)
 
 def handle_feedback(index):
     # Check the feedback value stored in session state for thumbs feedback
@@ -244,7 +291,8 @@ def handle_feedback(index):
         update_likes(index)
     elif feedback_value == 0:
         update_dislikes(index)
-
+    else:
+        update_metrics()
 def update_likes(index):
     """Updates metrics when a response is liked."""
     previous_rating = st.session_state['rated_responses'].get(index)
@@ -256,7 +304,6 @@ def update_likes(index):
         st.session_state['user_engagement']['likes'] += 1
         st.session_state['rated_responses'][index] = 'liked'
         st.session_state["y_pred"].append(1)
-        update_metrics()
 
 def update_dislikes(index):
     """Updates metrics when a response is disliked."""
@@ -269,4 +316,4 @@ def update_dislikes(index):
         st.session_state['user_engagement']['dislikes'] += 1
         st.session_state['rated_responses'][index] = 'disliked'
         st.session_state["y_pred"].append(0)
-        update_metrics()
+        
