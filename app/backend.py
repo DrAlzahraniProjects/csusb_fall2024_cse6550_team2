@@ -48,6 +48,7 @@ def retrieve_context(query_embedding, collection: Collection, limit=5):
         # Access fields directly
         text_content = result.entity.get("text_content")
         url = result.entity.get("url")
+        score = result.score  # Similarity score from Milvus
 
         if not text_content or not url:
             continue
@@ -57,8 +58,9 @@ def retrieve_context(query_embedding, collection: Collection, limit=5):
 
         # Add each chunk with its associated URL
         for split in text_splits:
-            context_chunks.append({"text_content": split, "url": url})
+            context_chunks.append({"text_content": split, "url": url,"score": score})
 
+    context_chunks = sorted(context_chunks, key=lambda x: x["score"], reverse=True)
     # print("Retrieved Context Chunks:", context_chunks)
     return context_chunks
 
@@ -83,9 +85,14 @@ def invoke_llm_for_response(query):
     llm = ChatMistralAI(model='open-mistral-7b', api_key=os.getenv("API_KEY"))
 
     # Define the prompt template
+    PROMPT_TEMPLATE = """
+    Based on the context: {context}\nAnswer the question: {question}. 
+    If you cannot answer the question, please just say: 
+    "I don't have enough information to answer this question."
+    """
     prompt = PromptTemplate(
         input_variables=["context", "question"],
-        template="Based on the context: {context}\nAnswer the question: {question}"
+        template=PROMPT_TEMPLATE
     )
     rag_chain = (
         {"context": RunnablePassthrough(), "question": RunnablePassthrough()}
@@ -101,29 +108,21 @@ def invoke_llm_for_response(query):
     collection = Collection("CSUSB_CSE_Data")
     context_chunks = retrieve_context(query_embedding, collection)
 
-    # Combine chunks while keeping within the token limit
-    max_tokens = 3000  # Model's max input tokens (adjust for safety)
-    current_tokens = 0
-    selected_chunks = []
-    for chunk in context_chunks:
-        chunk_tokens = len(chunk["text_content"].split())  # Approximation of tokens
-        if current_tokens + chunk_tokens > max_tokens:
-            break
-        selected_chunks.append(chunk["text_content"])
-        current_tokens += chunk_tokens
-
-    # Prepare context and deduplicate sources
-    context = " ".join(selected_chunks)
-    sources = list({chunk["url"] for chunk in context_chunks}) if selected_chunks else []
+    # Combine the most relevant chunk (first in sorted order) for the context
+    if context_chunks:
+        most_relevant_chunk = context_chunks[0]  # Select the highest-scoring chunk
+        context = most_relevant_chunk["text_content"]
+        sources = [most_relevant_chunk["url"]]  # Use the URL of the most relevant chunk
+    else:
+        context = ""
+        sources = []
 
     # If no context is found, pass a generic fallback context to the LLM
-    if not selected_chunks:
+    if not context:
         fallback_context = (
-            "The context does not provide specific information relevant to the query. "
-            "Generate a general response to help the user."
+            "I don't have enough information to answer this question."
         )
         response = rag_chain.invoke({"context": fallback_context, "question": query})
-        # Do not include sources in the response
         return format_response_with_highlights(response, [], [])
 
     # Generate the response using the retrieved context
@@ -131,20 +130,20 @@ def invoke_llm_for_response(query):
 
     # Define fallback phrases to exclude sources
     fallback_phrases = [
+        "I don't have enough information to answer this question.",
         "The context does not provide information",
         "The context does not provide specific information",
-        "you may want to visit the university's official website"
+        "you may want to visit the university's official website",
     ]
 
     # Check if response contains any fallback phrases
     if any(phrase in response for phrase in fallback_phrases) or not response.strip():
-        # Return the response without sources
-        final_response =format_response_with_highlights(response, [], [])
-        return final_response
-    else:
-        # Highlight keywords and format response
-        keywords = extract_keywords(query, response)
-        final_response = format_response_with_highlights(response, keywords, sources)
-        return final_response
+        # Ensure the response does not include sources
+        return format_response_with_highlights(response, [], [])
 
+    # Highlight keywords and format the response with sources if relevant
+    keywords = extract_keywords(query, response)
+    final_response = format_response_with_highlights(response, keywords, sources)
+    return final_response
 
+    
