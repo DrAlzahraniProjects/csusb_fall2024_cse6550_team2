@@ -51,11 +51,13 @@ docker run -p 5002:5002 -p 6002:6002 -e API_KEY=MISTRAL_API_KEY  team2_app
 ```
 ### Step 5: Access the Chatbot Application
 
-**Development** : http://localhost:5002/team2/
+**Development** : 
+*App* - http://localhost:5002/team2/
+*Jupyter* -  http://localhost:6002/team2/jupyter
 
-**Production** : https://sec.cse.csusb.edu/team2/
-
-**Jupyter** : http://localhost:6002/team2/jupyter
+**Production** : 
+*App* - https://sec.cse.csusb.edu/team2/
+*Jupyter* - https://sec.cse.csusb.edu/team2/jupyter
 
 ## SQA Table
 
