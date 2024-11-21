@@ -182,14 +182,14 @@ def update_metrics():
         """
         <style>
         .metric-box {
-            background-color: #f4f4f4;  /* Light gray background */
-            border: 1px solid #ccc;  /* Border color */
+            background-color: #f0f8ff;  /* Light gray background */
+            border: 1px solid #d0e7ff;  /* Border color */
             border-radius: 8px;  /* Rounded corners */
             padding: 10px;  /* Inner spacing */
             margin-bottom: 10px;  /* Space between boxes */
             font-family: Arial, sans-serif;  /* Font style */
             font-size: 14px;  /* Text size */
-            color: black;  /* Text color */
+            color: #003366;  /* Text color */
             font-weight: bold;  /* Bold text */
         }
         </style>
@@ -224,23 +224,46 @@ def update_metrics():
             """,
             unsafe_allow_html=True
         )
-        
         st.session_state["specificity_placeholder"].markdown(
-            f"<b style='color:black;'>Specificity: {specificity * 100:.2f}%</b>", unsafe_allow_html=True
+            f"""
+            <div class="metric-box">Specificity: {specificity * 100:.2f}%</div>
+            """,
+            unsafe_allow_html=True
         )
+        # st.session_state["specificity_placeholder"].markdown(
+        #     f"<b style='color:black;'>Specificity: {specificity * 100:.2f}%</b>", unsafe_allow_html=True
+        # )
         # Update confusion matrix and metrics in the sidebar
         st.session_state["confusion_matrix_placeholder"].table(
             pd.DataFrame(cm, columns=["Predicted Negative", "Predicted Positive"], index=["Actual Negative", "Actual Positive"])
         )
 
         # Accuracy, Precision, and Recall
-        st.session_state["accuracy_placeholder"].write(f"Accuracy: {accuracy * 100:.2f}%")
-        st.session_state["precision_placeholder"].write(f"Precision: {precision * 100:.2f}%")
-        st.session_state["recall_placeholder"].write(f"Recall: {recall * 100:.2f}%")
+        st.session_state["accuracy_placeholder"].markdown(
+            f"""
+            <div class="metric-box">Accuracy: {accuracy * 100:.2f}%</div>
+            """,
+            unsafe_allow_html=True
+        )
+        # st.session_state["accuracy_placeholder"].write(f"Accuracy: {accuracy * 100:.2f}%")
+        st.session_state["precision_placeholder"].markdown(
+            f"""
+            <div class="metric-box">Precision: {precision * 100:.2f}%</div>
+            """,
+            unsafe_allow_html=True
+        )
+        st.session_state["recall_placeholder"].markdown(
+            f"""
+            <div class="metric-box">Recall: {recall * 100:.2f}%</div>
+            """,
+            unsafe_allow_html=True
+        )
+        # st.session_state["precision_placeholder"].write(f"Precision: {precision * 100:.2f}%")
+        # st.session_state["recall_placeholder"].write(f"Recall: {recall * 100:.2f}%")
 
     else:
         st.session_state["sensitivity_placeholder"].markdown("<div class='metric-box'>Sensitivity: N/A</div>", unsafe_allow_html=True)
-        st.session_state["specificity_placeholder"].markdown("<b style='color:black;'>Specificity: N/A</b>", unsafe_allow_html=True)
+        st.session_state["specificity_placeholder"].markdown("<div class='metric-box'>Specificity: N/A</div>", unsafe_allow_html=True)
         st.session_state["confusion_matrix_placeholder"].write("Confusion Matrix: No data available.")
         st.session_state["accuracy_placeholder"].write("Accuracy: N/A")
         st.session_state["precision_placeholder"].write("Precision: N/A")
