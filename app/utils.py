@@ -212,6 +212,25 @@ def update_metrics():
         """,
         unsafe_allow_html=True
     )
+    st.markdown(
+    """
+    <style>
+    .curved-table {
+        border-collapse: separate; /* Allows border-radius to take effect */
+        border-spacing: 0; /* Ensures there’s no unwanted spacing */
+        border: 1px solid #ccc; /* Adds a border around the table */
+        border-radius: 12px; /* Rounds the table's corners */
+        overflow: hidden; /* Ensures rounded corners display properly */
+    }
+    .curved-table th, .curved-table td {
+        border: 1px solid #ccc; /* Adds borders to cells */
+        padding: 8px; /* Adds padding for readability */
+        text-align: center; /* Centers the content */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
     """Updates metrics such as confusion matrix, accuracy, specificity, precision, recall, and sensitivity in the sidebar."""
     if st.session_state["y_true"] and st.session_state["y_pred"]:
         adjusted_y_true = st.session_state["y_true"][:len(st.session_state["y_pred"])]
@@ -230,6 +249,7 @@ def update_metrics():
 
         TN, FP, FN, TP = cm.ravel() if cm.size == 4 else (0, 0, 0, 0)
         
+    
         # Calculate specificity and sensitivity
         specificity = TN / (TN + FP) if (TN + FP) != 0 else 0
         sensitivity = recall  # Sensitivity is equivalent to recall in binary classification
@@ -248,10 +268,14 @@ def update_metrics():
         )
         
         # Update confusion matrix and metrics in the sidebar
-        st.session_state["confusion_matrix_placeholder"].table(
-            pd.DataFrame(cm, columns=["Predicted Negative", "Predicted Positive"], index=["Actual Negative", "Actual Positive"])
+        # st.session_state["confusion_matrix_placeholder"].table(
+        #     pd.DataFrame(cm, columns=["Pred. Ans", "Pred. Unans"], index=["Actual Ans", "Actual Unans"])
+        # )
+        st.session_state["confusion_matrix_placeholder"].markdown(
+            pd.DataFrame(cm, columns=["Pred. Unans", "Pred. Ans"], index=["Actual Unans", "Actual ans"])
+            .to_html(classes="curved-table", escape=False),
+            unsafe_allow_html=True
         )
-
         # Accuracy, Precision, and Recall
         st.session_state["accuracy_placeholder"].markdown(
             f"""
@@ -268,7 +292,7 @@ def update_metrics():
         )
         st.session_state["recall_placeholder"].markdown(
             f"""
-            <div class="performance-box">Recall: {recall * 100:.2f}%</div>
+            <div class="performance-box">F1 Score: {recall * 100:.2f}%</div>
             """,
             unsafe_allow_html=True
         )
@@ -276,12 +300,34 @@ def update_metrics():
         # st.session_state["recall_placeholder"].write(f"Recall: {recall * 100:.2f}%")
 
     else:
-        st.session_state["sensitivity_placeholder"].markdown("<div class='metric-box'>Sensitivity: N/A</div>", unsafe_allow_html=True)
-        st.session_state["specificity_placeholder"].markdown("<div class='metric-box'>Specificity: N/A</div>", unsafe_allow_html=True)
-        st.session_state["confusion_matrix_placeholder"].write("Confusion Matrix: No data available.")
-        st.session_state["accuracy_placeholder"].markdown("<div class='performance-box'>Accuracy: N/A</div>", unsafe_allow_html=True)
+        st.session_state["sensitivity_placeholder"].markdown("<div class='metric-box'>Sensitivity: 0.0</div>", unsafe_allow_html=True)
+        st.session_state["specificity_placeholder"].markdown("<div class='metric-box'>Specificity: 0.0</div>", unsafe_allow_html=True)
+        # st.session_state["confusion_matrix_placeholder"].table(
+        #     pd.DataFrame( columns=["Predicted Negative", "Predicted Positive"], index=["Actual Negative", "Actual Positive"])
+        # )
+        # Render the table
+        cm_values = [
+            [f"{0} (TN)", f"{0} (FP)"],  # First row: Pred. Ans, Pred. Unans
+            [f"{0} (FN)", f"{0} (TP)"]   # Second row: Actual Ans, Actual Unans
+        ]
+        conf_matrix_df = pd.DataFrame(
+            cm_values, 
+            columns=["Pred. Unans", "Pred. Ans"], 
+            index=["Actual Unans", "Actual Ans"]
+        )
+        st.session_state["confusion_matrix_placeholder"].markdown(
+            conf_matrix_df.to_html(classes="curved-table", escape=False),
+            unsafe_allow_html=True
+        )
+        # st.session_state["confusion_matrix_placeholder"].markdown(
+        #     pd.DataFrame(columns=["Pred. Unans", "Pred. Ans"], index=["Actual Unans", "Actual ans"])
+        #     .to_html(classes="curved-table", escape=False),
+        #     unsafe_allow_html=True
+        # )
+        #st.session_state["confusion_matrix_placeholder"].write("Confusion Matrix: No data available.")
+        st.session_state["accuracy_placeholder"].markdown("<div class='performance-box'>Accuracy: 0.0</div>", unsafe_allow_html=True)
         # st.session_state["accuracy_placeholder"].write("Accuracy: N/A")
-        st.session_state["precision_placeholder"].markdown("<div class='performance-box'>Precision: N/A</div>", unsafe_allow_html=True)
+        st.session_state["precision_placeholder"].markdown("<div class='performance-box'>Precision: 0.0</div>", unsafe_allow_html=True)
         st.session_state["recall_placeholder"].markdown("<div class='performance-box'>F1 Score: 0.0</div>", unsafe_allow_html=True)
         # st.session_state["precision_placeholder"].write("Precision: N/A")
         # st.session_state["recall_placeholder"].write("Recall: N/A")
