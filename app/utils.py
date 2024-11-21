@@ -144,10 +144,6 @@ def reset_metrics():
     st.session_state["sensitivity_placeholder"].empty()
     st.session_state["specificity_placeholder"].empty()
     
-    # Clear engagement metrics placeholders
-    st.session_state["total_questions_placeholder"].empty()
-    st.session_state["correct_answers_placeholder"].empty()
-    st.session_state["incorrect_answers_placeholder"].empty()
     
     # Optionally, you could call `update_metrics()` here if you want to immediately reset the values to zero in the sidebar
     update_metrics()
@@ -176,12 +172,6 @@ def initialize_metrics_sidebar():
         st.session_state["recall_placeholder"] = st.empty()
         
     
-    with st.sidebar:
-        # Query Metrics for Engagement Summary
-        st.sidebar.write("Query Metrics:")
-        st.session_state["total_questions_placeholder"] = st.empty()
-        st.session_state["correct_answers_placeholder"] = st.empty()
-        st.session_state["incorrect_answers_placeholder"] = st.empty()
     
     # Initial update to display zeroed or default metrics
     update_metrics()
@@ -237,9 +227,6 @@ def update_metrics():
         st.session_state["precision_placeholder"].write("Precision: N/A")
         st.session_state["recall_placeholder"].write("Recall: N/A")
     
-    st.session_state["total_questions_placeholder"].write(f"Total Questions: {st.session_state['num_questions']}")
-    st.session_state["correct_answers_placeholder"].write(f"Correct Answers: {st.session_state['num_correct_answers']}")
-    st.session_state["incorrect_answers_placeholder"].write(f"Incorrect Answers: {st.session_state['num_incorrect_answers']}")
 
 
 def handle_feedback(index):
