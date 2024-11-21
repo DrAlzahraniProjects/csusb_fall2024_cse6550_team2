@@ -157,7 +157,12 @@ def reset_metrics():
 def initialize_metrics_sidebar():
     """Initializes sidebar placeholders for metrics and confusion matrix in an expanded UI."""
     
-    st.sidebar.title("Metric Summary")
+    st.sidebar.markdown(
+        """
+        <h2><a href="https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team2?tab=readme-ov-file#SQA-Table" target="_blank" style="text-decoration: none; color: inherit;">Metrix Summary</a></h2>
+        """, 
+        unsafe_allow_html=True
+    )
     
     with st.sidebar.expander("Confusion Matrix & Performance Metrics", expanded=True):
         # Confusion Matrix and Performance Metrics
