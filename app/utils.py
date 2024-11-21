@@ -128,7 +128,9 @@ def typing_title_animation(title, delay=0.1):
 def reset_metrics():
     """Resets all tracked metrics in session state."""
     # Reset engagement and response metrics
-   
+    st.session_state['num_questions'] = 0
+    st.session_state['num_correct_answers'] = 0
+    st.session_state['num_incorrect_answers'] = 0
     st.session_state['user_engagement'] = {'likes': 0, 'dislikes': 0}
     st.session_state['rated_responses'] = {}
     st.session_state["y_true"] = []
@@ -146,7 +148,6 @@ def reset_metrics():
     
     # Optionally, you could call `update_metrics()` here if you want to immediately reset the values to zero in the sidebar
     update_metrics()
-
 
 
 def initialize_metrics_sidebar():
@@ -177,6 +178,24 @@ def initialize_metrics_sidebar():
 
 
 def update_metrics():
+    st.markdown(
+        """
+        <style>
+        .metric-box {
+            background-color: #f4f4f4;  /* Light gray background */
+            border: 1px solid #ccc;  /* Border color */
+            border-radius: 8px;  /* Rounded corners */
+            padding: 10px;  /* Inner spacing */
+            margin-bottom: 10px;  /* Space between boxes */
+            font-family: Arial, sans-serif;  /* Font style */
+            font-size: 14px;  /* Text size */
+            color: black;  /* Text color */
+            font-weight: bold;  /* Bold text */
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
     """Updates metrics such as confusion matrix, accuracy, specificity, precision, recall, and sensitivity in the sidebar."""
     if st.session_state["y_true"] and st.session_state["y_pred"]:
         adjusted_y_true = st.session_state["y_true"][:len(st.session_state["y_pred"])]
@@ -199,31 +218,13 @@ def update_metrics():
         specificity = TN / (TN + FP) if (TN + FP) != 0 else 0
         sensitivity = recall  # Sensitivity is equivalent to recall in binary classification
 
-
-        st.markdown(
-        """
-        <style>
-        .metric-box {
-            background-color: #f4f4f4;  /* Light gray background */
-            border: 1px solid #ccc;  /* Border color */
-            border-radius: 8px;  /* Rounded corners */
-            padding: 10px;  /* Inner spacing */
-            margin-bottom: 10px;  /* Space between boxes */
-            font-family: Arial, sans-serif;  /* Font style */
-            font-size: 14px;  /* Text size */
-            color: black;  /* Text color */
-            font-weight: bold;  /* Bold text */
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-        )
         st.session_state["sensitivity_placeholder"].markdown(
             f"""
             <div class="metric-box">Sensitivity: {sensitivity * 100:.2f}%</div>
             """,
             unsafe_allow_html=True
         )
+        
         st.session_state["specificity_placeholder"].markdown(
             f"<b style='color:black;'>Specificity: {specificity * 100:.2f}%</b>", unsafe_allow_html=True
         )
@@ -238,12 +239,13 @@ def update_metrics():
         st.session_state["recall_placeholder"].write(f"Recall: {recall * 100:.2f}%")
 
     else:
-        st.session_state["sensitivity_placeholder"].markdown("<b style='color:black;'>Sensitivity: N/A</b>", unsafe_allow_html=True)
+        st.session_state["sensitivity_placeholder"].markdown("<div class='metric-box'>Sensitivity: N/A</div>", unsafe_allow_html=True)
         st.session_state["specificity_placeholder"].markdown("<b style='color:black;'>Specificity: N/A</b>", unsafe_allow_html=True)
         st.session_state["confusion_matrix_placeholder"].write("Confusion Matrix: No data available.")
         st.session_state["accuracy_placeholder"].write("Accuracy: N/A")
         st.session_state["precision_placeholder"].write("Precision: N/A")
         st.session_state["recall_placeholder"].write("Recall: N/A")
+
     
 
 
