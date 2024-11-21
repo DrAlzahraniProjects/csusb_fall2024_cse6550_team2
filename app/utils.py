@@ -1,5 +1,6 @@
 import streamlit as st
 import time
+import os
 import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
@@ -127,9 +128,7 @@ def typing_title_animation(title, delay=0.1):
 def reset_metrics():
     """Resets all tracked metrics in session state."""
     # Reset engagement and response metrics
-    st.session_state['num_questions'] = 0
-    st.session_state['num_correct_answers'] = 0
-    st.session_state['num_incorrect_answers'] = 0
+   
     st.session_state['user_engagement'] = {'likes': 0, 'dislikes': 0}
     st.session_state['rated_responses'] = {}
     st.session_state["y_true"] = []
@@ -201,10 +200,29 @@ def update_metrics():
         sensitivity = recall  # Sensitivity is equivalent to recall in binary classification
 
 
-
-        # Render Sensitivity and Specificity in black and bold
+        st.markdown(
+        """
+        <style>
+        .metric-box {
+            background-color: #f4f4f4;  /* Light gray background */
+            border: 1px solid #ccc;  /* Border color */
+            border-radius: 8px;  /* Rounded corners */
+            padding: 10px;  /* Inner spacing */
+            margin-bottom: 10px;  /* Space between boxes */
+            font-family: Arial, sans-serif;  /* Font style */
+            font-size: 14px;  /* Text size */
+            color: black;  /* Text color */
+            font-weight: bold;  /* Bold text */
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+        )
         st.session_state["sensitivity_placeholder"].markdown(
-            f"<b style='color:black;'>Sensitivity: {sensitivity * 100:.2f}%</b>", unsafe_allow_html=True
+            f"""
+            <div class="metric-box">Sensitivity: {sensitivity * 100:.2f}%</div>
+            """,
+            unsafe_allow_html=True
         )
         st.session_state["specificity_placeholder"].markdown(
             f"<b style='color:black;'>Specificity: {specificity * 100:.2f}%</b>", unsafe_allow_html=True
