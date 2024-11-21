@@ -164,7 +164,7 @@ def initialize_metrics_sidebar():
         unsafe_allow_html=True
     )
     
-    with st.sidebar.expander("Confusion Matrix & Performance Metrics", expanded=True):
+    with st.sidebar:
         # Confusion Matrix and Performance Metrics
         # st.sidebar.write("Confusion Matrix:")
         
@@ -176,7 +176,7 @@ def initialize_metrics_sidebar():
         st.session_state["recall_placeholder"] = st.empty()
         
     
-    with st.sidebar.expander("User Engagement Metrics", expanded=True):
+    with st.sidebar:
         # Query Metrics for Engagement Summary
         st.sidebar.write("Query Metrics:")
         st.session_state["total_questions_placeholder"] = st.empty()
