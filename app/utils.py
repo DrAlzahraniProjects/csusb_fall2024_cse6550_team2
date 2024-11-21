@@ -196,6 +196,24 @@ def update_metrics():
         """,
         unsafe_allow_html=True
     )
+    st.markdown(
+        """
+        <style>
+        .performance-box {
+            background-color: #f4f4f4;  /* Light gray background */
+            border: 1px solid #d0e7ff;  /* Border color */
+            border-radius: 8px;  /* Rounded corners */
+            padding: 10px;  /* Inner spacing */
+            margin-bottom: 10px;  /* Space between boxes */
+            font-family: Arial, sans-serif;  /* Font style */
+            font-size: 14px;  /* Text size */
+            color: #ccc;  /* Text color */
+            font-weight: bold;  /* Bold text */
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
     """Updates metrics such as confusion matrix, accuracy, specificity, precision, recall, and sensitivity in the sidebar."""
     if st.session_state["y_true"] and st.session_state["y_pred"]:
         adjusted_y_true = st.session_state["y_true"][:len(st.session_state["y_pred"])]
@@ -241,20 +259,20 @@ def update_metrics():
         # Accuracy, Precision, and Recall
         st.session_state["accuracy_placeholder"].markdown(
             f"""
-            <div class="metric-box">Accuracy: {accuracy * 100:.2f}%</div>
+            <div class="performance-box">Accuracy: {accuracy * 100:.2f}%</div>
             """,
             unsafe_allow_html=True
         )
         # st.session_state["accuracy_placeholder"].write(f"Accuracy: {accuracy * 100:.2f}%")
         st.session_state["precision_placeholder"].markdown(
             f"""
-            <div class="metric-box">Precision: {precision * 100:.2f}%</div>
+            <div class="performance-box">Precision: {precision * 100:.2f}%</div>
             """,
             unsafe_allow_html=True
         )
         st.session_state["recall_placeholder"].markdown(
             f"""
-            <div class="metric-box">Recall: {recall * 100:.2f}%</div>
+            <div class="performance-box">Recall: {recall * 100:.2f}%</div>
             """,
             unsafe_allow_html=True
         )
