@@ -57,6 +57,9 @@ RUN pip install pymilvus[model] langchain langchain_community langchain_huggingf
 # Copy the current directory contents into the container at /app
 COPY . /app
 
+# Copy only the Jupyter notebook to the /Jupyter directory
+COPY Jupyter /Jupyter
+
 # Set the StreamLit ENV for configuration
 ENV STREAMLIT_SERVER_BASEURLPATH=/team2
 ENV STREAMLIT_SERVER_PORT=5002
@@ -71,5 +74,5 @@ ENV PATH=/opt/miniforge/envs/team2_env/bin:$PATH
 
 # Run the Streamlit app and jupyter
 
-CMD ["sh", "-c", "streamlit run app/main.py --server.port=5002 --server.address=0.0.0.0 --server.baseUrlPath=/team2 & jupyter notebook --ip=0.0.0.0 --port=6002 --no-browser --allow-root --NotebookApp.base_url=/team2/jupyter --NotebookApp.token=''"]
+CMD ["sh", "-c", "streamlit run app/main.py --server.port=5002 --server.address=0.0.0.0 --server.baseUrlPath=/team2 & jupyter notebook --ip=0.0.0.0 --port=6002 --no-browser --allow-root --NotebookApp.base_url=/team2/jupyter --NotebookApp.token='' --notebook-dir=/Jupyter/"]
 
