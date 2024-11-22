@@ -1,12 +1,12 @@
 # Imports
 from web_crawler import initialize_and_scrape
-from utils import initialize_metrics_sidebar, initialize_session_state, update_metrics, reset_metrics, typing_title_animation, update_likes, update_dislikes, handle_feedback
+from utils import initialize_metrics_sidebar, initialize_session_state, is_rate_limited, update_metrics, reset_metrics, typing_title_animation, update_likes, update_dislikes, handle_feedback
 import streamlit as st
 import os
 import time
 from pymilvus import MilvusException
 from backend import *
-
+import httpx
 
 # Page configuration
 st.set_page_config(page_title="Academic Chatbot - Team2")
@@ -22,72 +22,98 @@ else:
 # Initialize session state variables
 initialize_session_state()
 
-# Initialize metrics and placeholders in sidebar
-initialize_metrics_sidebar()
+# Get client IP for rate limiting
+client_ip = st.session_state.get("client_ip", "unknown") 
 
-# Proceed only if API key is set
-if "API_KEY" in os.environ:
-
-   # Ensure `initialize_and_scrape()` runs only once
-    if 'milvus_initialized' not in st.session_state:
-        with st.spinner("Initializing, Please Wait..."):
-            initialize_and_scrape()
-        st.session_state['milvus_initialized'] = True  # Mark as initialized
-
-    # Typing animation for title
-    if not st.session_state['input_given'] and not st.session_state['title_animated']:
-        st.session_state['title_placeholder'] = typing_title_animation("Academic Advisor Chatbot", delay=0.1)
-        st.session_state['title_animated'] = True
-    else:
-        st.markdown(f"""<div class="chat-title">Academic Advisor Chatbot</div>""", unsafe_allow_html=True)
-
-    # Load CSS styling
-    with open("./style.css") as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-
-    # Function to process user input and generate bot response
-    def process_input(prompt):
-        st.session_state['num_questions'] += 1
-        st.session_state['messages'].append({"role": "user", "content": prompt})
-
-        start_time = time.time()
-        with st.spinner('Generating Response, Please Wait...'):
-            try:
-                response = invoke_llm_for_response(prompt)
-            except MilvusException as e:
-                response = "Error: Query format issue. Try a more detailed question." if "vector type must be the same" in str(e) else f"Error: {e}"
-            
-            # Append assistant's response to messages
-            st.session_state['messages'].append({"role": "assistant", "content": {"response": response}})
-            st.session_state['total_response_time'] += time.time() - start_time
-            st.session_state['num_responses'] += 1
-            update_metrics()  # Update metrics after generating a response
-
-    # Handle user input in chat
-    if prompt := st.chat_input("Message Team2 academic chatbot"):
-        process_input(prompt)
-
-# Display chat messages and feedback
-    for index, message in enumerate(st.session_state.get('messages', [])):
-        if message['role'] == 'user':
-            st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
-        else:
-            st.markdown(message['content'].get("response", ""),unsafe_allow_html=True)
-
-            # Use st.feedback with "thumbs" option for thumbs-up and thumbs-down feedback
-            st.feedback(
-                "thumbs",
-                key=f"feedback_{index}",
-                on_change=handle_feedback,
-                args=(index,)
-            )
-
-
-
-
-    # Sidebar Reset Button
-    if st.sidebar.button("Reset Metrics"):
-        reset_metrics()  # Reset all metrics and refresh the sidebar with zeroed values
-
+if is_rate_limited(client_ip):
+    st.warning("Too many requests! Please wait a while before trying again.")
 else:
-    st.warning("API key is required to proceed.")
+    # Proceed only if API key is set
+    if "API_KEY" in os.environ:
+        
+        # Typing animation for title
+        if not st.session_state['input_given'] and not st.session_state['title_animated']:
+            st.session_state['title_placeholder'] = typing_title_animation("Academic Advisor Chatbot", delay=0.1)
+            st.session_state['title_animated'] = True
+        else:
+            st.markdown(f"""<div class="p">Academic Advisor Chatbot</div>""", unsafe_allow_html=True)
+
+        # Load CSS styling
+        with open("./style.css") as f:
+            st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+       
+        # Ensure `initialize_and_scrape()` runs only once
+        if 'milvus_initialized' not in st.session_state:
+            # Placeholder for the timer
+            spinner_placeholder = st.empty()
+            initialization_time = 120  # Set an estimated initialization time in seconds
+
+            # Use spinner for the static "Initializing Milvus..." message
+            with st.spinner("Initializing Milvus..."):
+                initialize_metrics_sidebar()  # Initialize metrics sidebar
+                for remaining_time in range(initialization_time, 0, -1):
+                    minutes, seconds = divmod(remaining_time, 60)
+                    # Update only the timer dynamically
+                    spinner_placeholder.markdown(
+                        f"<h4 style='text-align: center;'>Please wait for {minutes} minute(s) {seconds} second(s)</h4>",
+                        unsafe_allow_html=True
+                    )
+                    time.sleep(1)  # Wait for 1 second
+                    # Simulated initialization logic (optional)
+                    if not st.session_state.get('milvus_initialized', False):
+                        if remaining_time == 3:  # Simulating early completion
+                            st.session_state['milvus_initialized'] = True
+                            break
+
+            # Clear the spinner placeholder after initialization
+            spinner_placeholder.empty()
+
+        # Function to process user input and generate bot response
+        def process_input(prompt):
+            st.session_state['num_questions'] += 1
+            st.session_state['messages'].append({"role": "user", "content": prompt})
+
+            start_time = time.time()
+            with st.spinner('Generating Response, Please Wait...'):
+                try:
+                    response = invoke_llm_for_response(prompt)
+                except MilvusException as e:
+                    response = "Error: Query format issue. Try a more detailed question." if "vector type must be the same" in str(e) else f"Error: {e}"
+                except httpx.HTTPStatusError as e:
+                    if e.response.status_code == 429:
+                        response = "Rate limit exceeded. Please wait a moment before trying again."
+                    else:
+                        response = f"An error occurred: {e}"
+                except Exception as e:
+                    response = f"Unexpected error: {e}"
+                # Append assistant's response to messages
+                st.session_state['messages'].append({"role": "assistant", "content": {"response": response}})
+                st.session_state['total_response_time'] += time.time() - start_time
+                st.session_state['num_responses'] += 1
+                update_metrics()  # Update metrics after generating a response
+
+        # Handle user input in chat
+        if prompt := st.chat_input("Message Team2 academic chatbot"):
+            process_input(prompt)
+
+    # Display chat messages and feedback
+        for index, message in enumerate(st.session_state.get('messages', [])):
+            if message['role'] == 'user':
+                st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
+            else:
+                st.markdown(message['content'].get("response", ""),unsafe_allow_html=True)
+
+                # Use st.feedback with "thumbs" option for thumbs-up and thumbs-down feedback
+                st.feedback(
+                    "thumbs",
+                    key=f"feedback_{index}",
+                    on_change=handle_feedback,
+                    args=(index,)
+                )
+
+        # Sidebar Reset Button
+        if st.sidebar.button("Reset Metrics"):
+            reset_metrics()  # Reset all metrics and refresh the sidebar with zeroed values
+
+    else:
+        st.warning("API key is required to proceed.")

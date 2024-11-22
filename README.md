@@ -47,15 +47,17 @@ docker build -t team2_app .
 Note: Use Mistral API Key in place of MISTRAL_API_KEY here below
 
 ```
-docker run -p 5002:5002 -p 6002:6002 -e API_KEY=MISTRAL_API_KEY  team2_app
+docker run -d -p 5002:5002 -p 6002:6002 -e API_KEY=MISTRAL_API_KEY  team2_app
 ```
 ### Step 5: Access the Chatbot Application
 
-**Development** : http://localhost:5002/team2/
+**Development** : 
+*App* - http://localhost:5002/team2/
+*Jupyter* -  http://localhost:6002/team2/jupyter
 
-**Production** : https://sec.cse.csusb.edu/team2/
-
-**Jupyter** : http://localhost:6002/team2/jupyter
+**Production** : 
+*App* - https://sec.cse.csusb.edu/team2/
+*Jupyter* - https://sec.cse.csusb.edu/team2/jupyter
 
 ## SQA Table
 
@@ -64,13 +66,16 @@ docker run -p 5002:5002 -p 6002:6002 -e API_KEY=MISTRAL_API_KEY  team2_app
 | Information about CSE programs?         | What job positions do alumni hold at tech companies?           |
 | What accreditation do computer science programs have?         | How much funding is allocated for research projects in the school?           |
 | How does CSE engage with industry for internships and employment?         | What are the housing options available near the school?           |
-| Who is the current Chair of CSE, and how can they be contacted?         | Explain the prerequisites for courses offered at other universities?           |
+| Who is the current Chair of CSE, and how can they be contacted?         |   Where is the School of Computer Science and Engineering located?     
 | How can students access remote labs?         | What are the grading percentages for each class in the Computer Science program?           |
-| What is the CSE Club, and what resources does it provide to students?         | Can you give the syllabus for every course offered by CSE?           |
+| -  |   What are the contact details for the IT support staff?     
 | What research and internship opportunities are available?         | What types of equipment can be checked out by students?           |
 | How can students apply for the Excels Scholarship?         | Is parking free at the university?           |
-| Where is the School of Computer Science and Engineering located?         | What school activities or events take place in the Winter?           |
+| Where is the School of Computer Science and Engineering located?         |       
 | What are the contact details for the IT support staff?        | What are the most popular elective courses in the school?          |
+| Can you give the syllabus for every course offered by CSE? 
+| What school activities or events take place in the Winter?
+
 
 
 
