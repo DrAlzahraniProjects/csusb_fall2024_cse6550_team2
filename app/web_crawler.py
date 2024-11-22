@@ -1,5 +1,6 @@
-corpus_source = "https://www.csusb.edu/cse"
-
+# Base configuration
+corpus_BASE_source = "https://www.csusb.edu"
+corpus_source = f"{corpus_BASE_source}/cse"
 
 import time
 from pymilvus import connections, utility, Collection, CollectionSchema, FieldSchema, DataType
@@ -7,9 +8,6 @@ from sentence_transformers import SentenceTransformer
 from bs4 import BeautifulSoup
 import requests
 
-# Base configuration
-
-start_url = f"{corpus_source}/cse"
 MILVUS_URI = "milvus_vector.db"
 
 def scrape_page(url, section_name):
@@ -48,7 +46,7 @@ def scrape_page(url, section_name):
             src = img.get("src")
             alt = img.get("alt", "No description")
             if src:
-                full_url = src if src.startswith("http") else corpus_source + src
+                full_url = src if src.startswith("http") else corpus_BASE_source + src
                 page_data["content"].append({"type": "image", "alt": alt, "url": full_url})
 
         # Extract links
@@ -56,20 +54,20 @@ def scrape_page(url, section_name):
             href = link["href"]
             text = link.get_text(strip=True)
             if text and (href.startswith("http") or href.startswith("/")):
-                full_url = href if href.startswith("http") else corpus_source + href
+                full_url = href if href.startswith("http") else corpus_BASE_source + href
                 page_data["content"].append({"type": "link", "text": text, "url": full_url})
         time.sleep(1)
         return page_data
     except Exception as e:
         print(f"Error scraping {url}: {e}")
 
-def scrape_main_page(start_url):
+def scrape_main_page(corpus_source):
     """Scrape main page and all linked pages in the navigation."""
     visited_links = set()
     data = []  # Collect all scraped data here
 
     try:
-        response = requests.get(start_url)
+        response = requests.get(corpus_source)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "html.parser")
         nav_links = soup.select("a[href]")
@@ -77,8 +75,8 @@ def scrape_main_page(start_url):
         for link in nav_links:
             href = link.get("href")
             section_name = link.get_text(strip=True)
-            if href and (href.startswith("/cse") or (corpus_source in href and "cse" in href)):
-                full_url = href if href.startswith("http") else corpus_source + href
+            if href and (href.startswith("/cse") or (corpus_BASE_source in href and "cse" in href)):
+                full_url = href if href.startswith("http") else corpus_BASE_source + href
                 if full_url not in visited_links:
                     visited_links.add(full_url)
                     # print(f"Scraping section '{section_name}' at URL: {full_url}")
@@ -86,7 +84,7 @@ def scrape_main_page(start_url):
                     if page_data:
                         data.append(page_data)  # Add the scraped page data to the list
     except Exception as e:
-        print(f"Error scraping {start_url}: {e}")
+        print(f"Error scraping {corpus_source}: {e}")
 
     return data  # Return the collected data
 
@@ -125,7 +123,7 @@ def initialize_milvus(data):
 def initialize_and_scrape():
     """Wrapper function to perform the entire workflow."""
     # Scrape data
-    data = scrape_main_page(start_url)
+    data = scrape_main_page(corpus_source)
     if not data:
         print("No data was scraped. Please check the scraper.")
         return
