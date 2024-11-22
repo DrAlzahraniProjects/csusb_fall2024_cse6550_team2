@@ -114,7 +114,7 @@ def initialize_session_state():
     if 'title_placeholder' not in st.session_state:
         st.session_state['title_placeholder'] = st.empty()
 
-
+# Title animation function
 def typing_title_animation(title, delay=0.1):
     """Animates typing effect for a given title."""
     title_placeholder = st.empty()
@@ -161,9 +161,6 @@ def initialize_metrics_sidebar():
     )
     
     with st.sidebar:
-        # Confusion Matrix and Performance Metrics
-        # st.sidebar.write("Confusion Matrix:")
-        
         st.session_state["sensitivity_placeholder"] = st.empty()
         st.session_state["specificity_placeholder"] = st.empty()
         st.session_state["confusion_matrix_placeholder"] = st.empty()
@@ -173,7 +170,6 @@ def initialize_metrics_sidebar():
     
     # Initial update to display zeroed or default metrics
     update_metrics()
-
 
 def update_metrics():
     st.markdown(
@@ -267,15 +263,12 @@ def update_metrics():
             unsafe_allow_html=True
         )
         
-        # Update confusion matrix and metrics in the sidebar
-        # st.session_state["confusion_matrix_placeholder"].table(
-        #     pd.DataFrame(cm, columns=["Pred. Ans", "Pred. Unans"], index=["Actual Ans", "Actual Unans"])
-        # )
         st.session_state["confusion_matrix_placeholder"].markdown(
             pd.DataFrame(cm, columns=["Pred. Unans", "Pred. Ans"], index=["Actual Unans", "Actual ans"])
             .to_html(classes="curved-table", escape=False),
             unsafe_allow_html=True
         )
+
         # Accuracy, Precision, and Recall
         st.session_state["accuracy_placeholder"].markdown(
             f"""
@@ -296,8 +289,6 @@ def update_metrics():
             """,
             unsafe_allow_html=True
         )
-        # st.session_state["precision_placeholder"].write(f"Precision: {precision * 100:.2f}%")
-        # st.session_state["recall_placeholder"].write(f"Recall: {recall * 100:.2f}%")
 
     else:
         st.session_state["sensitivity_placeholder"].markdown("<div class='metric-box'>Sensitivity: 0.0</div>", unsafe_allow_html=True)
@@ -319,20 +310,10 @@ def update_metrics():
             conf_matrix_df.to_html(classes="curved-table", escape=False),
             unsafe_allow_html=True
         )
-        # st.session_state["confusion_matrix_placeholder"].markdown(
-        #     pd.DataFrame(columns=["Pred. Unans", "Pred. Ans"], index=["Actual Unans", "Actual ans"])
-        #     .to_html(classes="curved-table", escape=False),
-        #     unsafe_allow_html=True
-        # )
-        #st.session_state["confusion_matrix_placeholder"].write("Confusion Matrix: No data available.")
+       
         st.session_state["accuracy_placeholder"].markdown("<div class='performance-box'>Accuracy: 0.0</div>", unsafe_allow_html=True)
-        # st.session_state["accuracy_placeholder"].write("Accuracy: N/A")
         st.session_state["precision_placeholder"].markdown("<div class='performance-box'>Precision: 0.0</div>", unsafe_allow_html=True)
         st.session_state["recall_placeholder"].markdown("<div class='performance-box'>F1 Score: 0.0</div>", unsafe_allow_html=True)
-        # st.session_state["precision_placeholder"].write("Precision: N/A")
-        # st.session_state["recall_placeholder"].write("Recall: N/A")
-
-    
 
 
 def handle_feedback(index):
