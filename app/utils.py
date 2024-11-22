@@ -4,6 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+from collections import defaultdict
 
 # Initialize session state variables
 def initialize_session_state():
@@ -121,7 +122,7 @@ def typing_title_animation(title, delay=0.1):
     animated_title = ""
     for char in title:
         animated_title += char
-        title_placeholder.markdown(f"<h1 style='text-align: center;'>{animated_title}</h1>", unsafe_allow_html=True)
+        title_placeholder.markdown(f"<h1 style='text-align: center; margin-top: 40px;'>{animated_title}</h1>", unsafe_allow_html=True)
         time.sleep(delay)
     return title_placeholder
 
@@ -368,3 +369,19 @@ def update_dislikes(index):
         st.session_state['rated_responses'][index] = 'disliked'
         st.session_state["y_pred"].append(0)
         update_metrics()
+
+# Rate-limiting setup
+REQUEST_LOG = defaultdict(list)  # Tracks requests per IP
+MAX_REQUESTS = 5  # Max requests allowed
+WINDOW_SECONDS = 60  # Time window in seconds
+
+def is_rate_limited(ip):
+    """Check if an IP is exceeding the request limit."""
+    now = time.time()
+    REQUEST_LOG[ip] = [timestamp for timestamp in REQUEST_LOG[ip] if now - timestamp < WINDOW_SECONDS]
+
+    if len(REQUEST_LOG[ip]) < MAX_REQUESTS:
+        REQUEST_LOG[ip].append(now)
+        return False  # Not rate-limited
+
+    return True  # Rate-limited

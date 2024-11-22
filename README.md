@@ -47,7 +47,7 @@ docker build -t team2_app .
 Note: Use Mistral API Key in place of MISTRAL_API_KEY here below
 
 ```
-docker run -p 5002:5002 -p 6002:6002 -e API_KEY=MISTRAL_API_KEY  team2_app
+docker run -d -p 5002:5002 -p 6002:6002 -e API_KEY=MISTRAL_API_KEY  team2_app
 ```
 ### Step 5: Access the Chatbot Application
 

@@ -1,18 +1,21 @@
-div[data-testid="stVerticalBlock"] div:has(div.fixed-header) {
-    text-align: center;
-    position: sticky;
-    top: 2.875rem;
-    z-index: 999;
-}
-
 .chat-title{
-    font-size: 50px;
+    font-size: 45px;
     font-weight: bold;
     background-color:#ffffff;
     z-index: 999;
     text-align: center;
     position: sticky;
-    top: 2.875rem;
+    top: 0; 
+    padding: 10px 0; /* Add some padding for aesthetics */
+    margin: 0; /* Remove default margin */
+    border-bottom: 1px solid #ddd;
+
+}
+div[data-testid="stVerticalBlock"] div:has(div.fixed-header) {
+    text-align: center;
+    position: sticky;
+    top: 0; /* Align to the very top */
+    z-index: 999;
 }
 
 .user-message {
