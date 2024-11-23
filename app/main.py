@@ -49,6 +49,8 @@ else:
             # Placeholder for the dynamic loader
             spinner_placeholder = st.empty()
             initialization_time = 180  # Estimated initialization time in seconds
+            initialize_metrics_sidebar()
+            initialize_and_scrape()
 
             # Display spinner and dynamic timer
             with st.spinner("Initializing Milvus..."):
@@ -61,21 +63,11 @@ else:
                         f"<h4 style='text-align: center;'>Please wait for {minutes} minute(s) {seconds} second(s)</h4>",
                         unsafe_allow_html=True
                     )
-
-                    # Run Milvus initialization in the first second
-                    if remaining_time == initialization_time:
-                        initialize_metrics_sidebar()
-                        initialize_and_scrape()
-
-                    # Exit the loop if initialization completes early
-                    if st.session_state.get('milvus_initialized', False):
-                        break
-
                     time.sleep(1)  # Wait for 1 second
-
             # Clear the spinner and show success or error message
             spinner_placeholder.empty()
-
+        # st.session_state['milvus_initialized'] = True
+        # spinner_placeholder.empty()  # Clear the spinner
         # Function to process user input and generate bot response
         def process_input(prompt):
             st.session_state['num_questions'] += 1
