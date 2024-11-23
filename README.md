@@ -68,14 +68,18 @@ docker run -d -p 5002:5002 -p 6002:6002 -e API_KEY=MISTRAL_API_KEY  team2_app
 | How does CSE engage with industry for internships and employment?         | What are the housing options available near the school?           |
 | Who is the current Chair of CSE, and how can they be contacted?         |   Where is the School of Computer Science and Engineering located?     
 | How can students access remote labs?         | What are the grading percentages for each class in the Computer Science program?           |
-| -  |   What are the contact details for the IT support staff?     
+|How do I change my academic advisor in the CSE department?   |   What are the contact details for the IT support staff?     
 | What research and internship opportunities are available?         | What types of equipment can be checked out by students?           |
 | How can students apply for the Excels Scholarship?         | Is parking free at the university?           |
 | Where is the School of Computer Science and Engineering located?         |       
 | What are the contact details for the IT support staff?        | What are the most popular elective courses in the school?          |
-| Can you give the syllabus for every course offered by CSE? 
-| What school activities or events take place in the Winter?
-
+| Can you give the syllabus for every course offered by CSE? | What is the process for transferring credits from another university to the CSE program?
+| What school activities or events take place in the Winter? | What electives should I take if I want to specialize in Artificial Intelligence?
+|How do I request a prerequisite waiver for a CSE course?| How do I book a private meeting room in the library for a non-academic purpose?
+|What is the process for getting approval for an internship to count as course credit? | How many vending machines are there on campus?
+|What is the success rate of CSUSB students in securing jobs at FAANG companies?
+|What resources are available to help with preparing my senior project? | What is the Wi-Fi password for the CSE department's faculty lounge?
+|How do I request a change in my graduation plan?|How many students graduate from the CSE program each year? | How many campuses are there in CSUSB?
 
 
 
