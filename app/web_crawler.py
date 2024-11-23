@@ -1,4 +1,4 @@
-corpus_source = "https://www.csusb.edu/cse"
+corpus_source = "https://www.csusb.edu/"
 
 
 import time

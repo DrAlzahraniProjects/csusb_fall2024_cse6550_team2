@@ -44,28 +44,36 @@ else:
        
         # Ensure `initialize_and_scrape()` runs only once
         if 'milvus_initialized' not in st.session_state:
-            # Placeholder for the timer
-            spinner_placeholder = st.empty()
-            initialization_time = 120  # Set an estimated initialization time in seconds
+            st.session_state['milvus_initialized'] = False  # Default state
 
-            # Use spinner for the static "Initializing Milvus..." message
+            # Placeholder for the dynamic loader
+            spinner_placeholder = st.empty()
+            initialization_time = 180  # Estimated initialization time in seconds
+
+            # Display spinner and dynamic timer
             with st.spinner("Initializing Milvus..."):
-                initialize_metrics_sidebar()  # Initialize metrics sidebar
                 for remaining_time in range(initialization_time, 0, -1):
+                    # Calculate minutes and seconds
                     minutes, seconds = divmod(remaining_time, 60)
-                    # Update only the timer dynamically
+
+                    # Update the timer in the UI
                     spinner_placeholder.markdown(
                         f"<h4 style='text-align: center;'>Please wait for {minutes} minute(s) {seconds} second(s)</h4>",
                         unsafe_allow_html=True
                     )
-                    time.sleep(1)  # Wait for 1 second
-                    # Simulated initialization logic (optional)
-                    if not st.session_state.get('milvus_initialized', False):
-                        if remaining_time == 3:  # Simulating early completion
-                            st.session_state['milvus_initialized'] = True
-                            break
 
-            # Clear the spinner placeholder after initialization
+                    # Run Milvus initialization in the first second
+                    if remaining_time == initialization_time:
+                        initialize_metrics_sidebar()
+                        initialize_and_scrape()
+
+                    # Exit the loop if initialization completes early
+                    if st.session_state.get('milvus_initialized', False):
+                        break
+
+                    time.sleep(1)  # Wait for 1 second
+
+            # Clear the spinner and show success or error message
             spinner_placeholder.empty()
 
         # Function to process user input and generate bot response
