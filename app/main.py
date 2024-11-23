@@ -75,7 +75,8 @@ else:
 
             # Clear the spinner and show success or error message
             spinner_placeholder.empty()
-
+        # st.session_state['milvus_initialized'] = True
+        # spinner_placeholder.empty()  # Clear the spinner
         # Function to process user input and generate bot response
         def process_input(prompt):
             st.session_state['num_questions'] += 1
