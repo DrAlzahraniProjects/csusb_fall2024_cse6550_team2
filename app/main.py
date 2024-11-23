@@ -48,7 +48,7 @@ else:
 
             # Placeholder for the dynamic loader
             spinner_placeholder = st.empty()
-            initialization_time = 180  # Estimated initialization time in seconds
+            initialization_time = 120  # Estimated initialization time in seconds
 
             # Display spinner and dynamic timer
             with st.spinner("Initializing Milvus..."):
@@ -71,7 +71,7 @@ else:
                     if st.session_state.get('milvus_initialized', False):
                         break
 
-                    time.sleep(1)  # Wait for 1 second
+                    time.sleep(0.2)  # Wait for 1 second
 
             # Clear the spinner and show success or error message
             spinner_placeholder.empty()
