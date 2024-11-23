@@ -1,4 +1,4 @@
-corpus_source = "https://www.csusb.edu/"
+corpus_source = "https://www.csusb.edu"
 
 
 import time
@@ -129,6 +129,10 @@ def initialize_and_scrape():
     if not data:
         print("No data was scraped. Please check the scraper.")
         return
+    # for item in data:
+    #     print(f"URL: {item['url']}")
+    # for content in item['content']:
+    #     print(f"Type: {content['type']}, Text: {content.get('text', '')}")
     
     print(f"Total pages scraped: {len(data)}")
    
