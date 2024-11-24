@@ -59,23 +59,22 @@ docker run -d -p 5002:5002 -p 6002:6002 -e API_KEY=MISTRAL_API_KEY  team2_app
 *App* - https://sec.cse.csusb.edu/team2/
 *Jupyter* - https://sec.cse.csusb.edu/team2/jupyter
 
+
 ## SQA Table
 
-| **Answerable**                                                     | **Unanswerable**                                                        |
-|--------------------------------------------------------------------|-------------------------------------------------------------------------|
-| Information about CSE programs?         | What job positions do alumni hold at tech companies?           |
-| What accreditation do computer science programs have?         | How much funding is allocated for research projects in the school?           |
-| How does CSE engage with industry for internships and employment?         | What are the housing options available near the school?           |
-| Who is the current Chair of CSE, and how can they be contacted?         |   Where is the School of Computer Science and Engineering located?     
-| How can students access remote labs?         | What are the grading percentages for each class in the Computer Science program?           |
-| -  |   What are the contact details for the IT support staff?     
-| What research and internship opportunities are available?         | What types of equipment can be checked out by students?           |
-| How can students apply for the Excels Scholarship?         | Is parking free at the university?           |
-| Where is the School of Computer Science and Engineering located?         |       
-| What are the contact details for the IT support staff?        | What are the most popular elective courses in the school?          |
-| Can you give the syllabus for every course offered by CSE? 
-| What school activities or events take place in the Winter?
-
+| **Answerable Questions**                                                                 | **Unanswerable Questions**                                                |
+|------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| What are the faculty office hours of Dr. Khalil Dajani?                                  | Tell me about the Sociology department?                                   |
+| Give me the contact information for the CSE department.                                  | Do you know where the HR office is located?                              |
+| What certificate programs are available?                                                | How can I use the weblogon service?                                      |
+| Provide a list of faculty and staff in the CSE department.                               | What is the history of CSUSB?                                            |
+| How can I make an advising appointment?                                                 | Tell me about the Entrepreneurship programs.                             |
+| How can I check my class schedule?                                                      | Can you name the public administration faculty members?                  |
+| What courses are offered for undergraduate students?                                     | What are the Art and Letter perspectives at CSUSB?                       |
+| What are the student internship opportunities?                                           | Is IST a course in the CSE department?                                   |
+| How do I get remote lab access?                                                         | What is ATI?                                                             |
+| How can I join the CSE club?                                                            | Where are the CSU FILA awards held?                                      |
+| Can I install VMware Horizon Client?                                                    |                                                                           |
 
 
 

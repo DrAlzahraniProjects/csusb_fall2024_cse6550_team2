@@ -1,6 +1,11 @@
+<<<<<<< HEAD
 # Base configuration
 corpus_BASE_source = "https://www.csusb.edu"
 corpus_source = f"{corpus_BASE_source}/cse"
+=======
+corpus_source = "https://www.csusb.edu"
+
+>>>>>>> 6e500ce0e88d6cbd9631c803c9db7d8a677c6329
 
 import time
 from pymilvus import connections, utility, Collection, CollectionSchema, FieldSchema, DataType
@@ -127,6 +132,10 @@ def initialize_and_scrape():
     if not data:
         print("No data was scraped. Please check the scraper.")
         return
+    # for item in data:
+    #     print(f"URL: {item['url']}")
+    # for content in item['content']:
+    #     print(f"Type: {content['type']}, Text: {content.get('text', '')}")
     
     print(f"Total pages scraped: {len(data)}")
    
