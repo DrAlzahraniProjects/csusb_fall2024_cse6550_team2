@@ -163,7 +163,6 @@ def initialize_metrics_sidebar():
     
     with st.sidebar:
         # Confusion Matrix and Performance Metrics
-        # st.sidebar.write("Confusion Matrix:")
         
         st.session_state["sensitivity_placeholder"] = st.empty()
         st.session_state["specificity_placeholder"] = st.empty()
@@ -269,9 +268,6 @@ def update_metrics():
         )
         
         # Update confusion matrix and metrics in the sidebar
-        # st.session_state["confusion_matrix_placeholder"].table(
-        #     pd.DataFrame(cm, columns=["Pred. Ans", "Pred. Unans"], index=["Actual Ans", "Actual Unans"])
-        # )
         st.session_state["confusion_matrix_placeholder"].markdown(
             pd.DataFrame(cm, columns=["Pred. Unans", "Pred. Ans"], index=["Actual Unans", "Actual ans"])
             .to_html(classes="curved-table", escape=False),
@@ -297,15 +293,10 @@ def update_metrics():
             """,
             unsafe_allow_html=True
         )
-        # st.session_state["precision_placeholder"].write(f"Precision: {precision * 100:.2f}%")
-        # st.session_state["recall_placeholder"].write(f"Recall: {recall * 100:.2f}%")
 
     else:
         st.session_state["sensitivity_placeholder"].markdown("<div class='metric-box'>Sensitivity: 0.0</div>", unsafe_allow_html=True)
         st.session_state["specificity_placeholder"].markdown("<div class='metric-box'>Specificity: 0.0</div>", unsafe_allow_html=True)
-        # st.session_state["confusion_matrix_placeholder"].table(
-        #     pd.DataFrame( columns=["Predicted Negative", "Predicted Positive"], index=["Actual Negative", "Actual Positive"])
-        # )
         # Render the table
         cm_values = [
             [f"{0} (TN)", f"{0} (FP)"],  # First row: Pred. Ans, Pred. Unans
@@ -313,27 +304,16 @@ def update_metrics():
         ]
         conf_matrix_df = pd.DataFrame(
             cm_values, 
-            columns=["Pred. Unans", "Pred. Ans"], 
-            index=["Actual Unans", "Actual Ans"]
+            columns=["Predicted -", "Predicted +"], 
+            index=["Actual -", "Actual +"]
         )
         st.session_state["confusion_matrix_placeholder"].markdown(
             conf_matrix_df.to_html(classes="curved-table", escape=False),
             unsafe_allow_html=True
         )
-        # st.session_state["confusion_matrix_placeholder"].markdown(
-        #     pd.DataFrame(columns=["Pred. Unans", "Pred. Ans"], index=["Actual Unans", "Actual ans"])
-        #     .to_html(classes="curved-table", escape=False),
-        #     unsafe_allow_html=True
-        # )
-        #st.session_state["confusion_matrix_placeholder"].write("Confusion Matrix: No data available.")
         st.session_state["accuracy_placeholder"].markdown("<div class='performance-box'>Accuracy: 0.0</div>", unsafe_allow_html=True)
-        # st.session_state["accuracy_placeholder"].write("Accuracy: N/A")
         st.session_state["precision_placeholder"].markdown("<div class='performance-box'>Precision: 0.0</div>", unsafe_allow_html=True)
         st.session_state["recall_placeholder"].markdown("<div class='performance-box'>F1 Score: 0.0</div>", unsafe_allow_html=True)
-        # st.session_state["precision_placeholder"].write("Precision: N/A")
-        # st.session_state["recall_placeholder"].write("Recall: N/A")
-
-    
 
 
 def handle_feedback(index):
@@ -372,8 +352,8 @@ def update_dislikes(index):
 
 # Rate-limiting setup
 REQUEST_LOG = defaultdict(list)  # Tracks requests per IP
-MAX_REQUESTS = 5  # Max requests allowed
-WINDOW_SECONDS = 60  # Time window in seconds
+MAX_REQUESTS = 10  # Max requests allowed
+WINDOW_SECONDS = 5  # Time window in seconds
 
 def is_rate_limited(ip):
     """Check if an IP is exceeding the request limit."""
