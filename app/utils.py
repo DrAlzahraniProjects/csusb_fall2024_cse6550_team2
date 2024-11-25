@@ -1,10 +1,8 @@
 import streamlit as st
 import time
-import os
 import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
-from collections import defaultdict
 
 # Initialize session state variables
 def initialize_session_state():
@@ -122,7 +120,7 @@ def typing_title_animation(title, delay=0.1):
     animated_title = ""
     for char in title:
         animated_title += char
-        title_placeholder.markdown(f"<h1 style='text-align: center; margin-top: 40px;'>{animated_title}</h1>", unsafe_allow_html=True)
+        title_placeholder.markdown(f"<h1 style='text-align: center;'>{animated_title}</h1>", unsafe_allow_html=True)
         time.sleep(delay)
     return title_placeholder
 
@@ -136,16 +134,29 @@ def reset_metrics():
     st.session_state['rated_responses'] = {}
     st.session_state["y_true"] = []
     st.session_state["y_pred"] = []
-    st.session_state['total_response_time'] = 0
+    st.session_state['total_response_time'] = 0 
     
     # Clear confusion matrix and performance metrics
-    st.session_state["confusion_matrix_placeholder"].empty()
-    st.session_state["accuracy_placeholder"].empty()
-    st.session_state["precision_placeholder"].empty()
-    st.session_state["recall_placeholder"].empty()
-    st.session_state["sensitivity_placeholder"].empty()
-    st.session_state["specificity_placeholder"].empty()
+    if "confusion_matrix_placeholder" in st.session_state:
+        st.session_state["confusion_matrix_placeholder"].empty()
+    if "accuracy_placeholder" in st.session_state:
+        st.session_state["accuracy_placeholder"].empty()
+    if "precision_placeholder" in st.session_state:
+        st.session_state["precision_placeholder"].empty()
+    if "recall_placeholder" in st.session_state:
+        st.session_state["recall_placeholder"].empty()
+    if "sensitivity_placeholder" in st.session_state:
+        st.session_state["sensitivity_placeholder"].empty()
+    if "specificity_placeholder" in st.session_state:
+        st.session_state["specificity_placeholder"].empty()
     
+    # Clear engagement metrics placeholders
+    if "total_questions_placeholder" in st.session_state:
+        st.session_state["total_questions_placeholder"].empty()
+    if "correct_answers_placeholder" in st.session_state:
+        st.session_state["correct_answers_placeholder"].empty()
+    if "incorrect_answers_placeholder" in st.session_state:
+        st.session_state["incorrect_answers_placeholder"].empty()
     
     # Optionally, you could call `update_metrics()` here if you want to immediately reset the values to zero in the sidebar
     update_metrics()
@@ -154,83 +165,36 @@ def reset_metrics():
 def initialize_metrics_sidebar():
     """Initializes sidebar placeholders for metrics and confusion matrix in an expanded UI."""
     
+    # Sidebar title with "Confusion Matrix" and a link icon next to it
     st.sidebar.markdown(
         """
-        <h2><a href="https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team2?tab=readme-ov-file#SQA-Table" target="_blank" style="text-decoration: none; color: inherit;">Metrix Summary</a></h2>
-        """, 
+        <h2 style='display: inline;'>Confusion Matrix</h2>
+        <a href="https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team2/blob/main/README.md" target="_blank" style="text-decoration: none;">
+            🔗
+        </a>
+        """,
         unsafe_allow_html=True
     )
-    
-    with st.sidebar:
-        # Confusion Matrix and Performance Metrics        
-        st.session_state["sensitivity_placeholder"] = st.empty()
-        st.session_state["specificity_placeholder"] = st.empty()
-        st.session_state["confusion_matrix_placeholder"] = st.empty()
-        st.session_state["accuracy_placeholder"] = st.empty()
-        st.session_state["precision_placeholder"] = st.empty()
-        st.session_state["recall_placeholder"] = st.empty()
     
     # Initial update to display zeroed or default metrics
     update_metrics()
 
 
 def update_metrics():
-    st.markdown(
-        """
-        <style>
-        .metric-box {
-            background-color: #f0f8ff;  /* Light gray background */
-            border: 1px solid #d0e7ff;  /* Border color */
-            border-radius: 8px;  /* Rounded corners */
-            padding: 10px;  /* Inner spacing */
-            margin-bottom: 10px;  /* Space between boxes */
-            font-family: Arial, sans-serif;  /* Font style */
-            font-size: 14px;  /* Text size */
-            color: skyblue;  /* Text color */
-            font-weight: bold;  /* Bold text */
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        """
-        <style>
-        .performance-box {
-            background-color: #f4f4f4;  /* Light gray background */
-            border: 1px solid #ccc;  /* Border color */
-            border-radius: 8px;  /* Rounded corners */
-            padding: 10px;  /* Inner spacing */
-            margin-bottom: 10px;  /* Space between boxes */
-            font-family: Arial, sans-serif;  /* Font style */
-            font-size: 14px;  /* Text size */
-            color: gray;  /* Text color */
-            font-weight: bold;  /* Bold text */
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-    st.markdown(
-    """
-    <style>
-    .curved-table {
-        border-collapse: separate; /* Allows border-radius to take effect */
-        border-spacing: 0; /* Ensures there’s no unwanted spacing */
-        border: 1px solid #ccc; /* Adds a border around the table */
-        border-radius: 12px; /* Rounds the table's corners */
-        overflow: hidden; /* Ensures rounded corners display properly */
-    }
-    .curved-table th, .curved-table td {
-        border: 1px solid #ccc; /* Adds borders to cells */
-        padding: 8px; /* Adds padding for readability */
-        text-align: center; /* Centers the content */
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
     """Updates metrics such as confusion matrix, accuracy, specificity, precision, recall, and sensitivity in the sidebar."""
+     # Function to apply color based on cell content
+    def color_cells(val):
+        """
+        Apply color based on cell content or other logic.
+        Args:
+            val (str): The value in the cell
+        Returns:
+            str : The color to apply to the cell
+        """
+        if "TP" in val or "TN" in val:
+            return "background-color: #f1f1f1; color: #444444"
+        return "background-color: #f9f9f9; color: #444444"
+    
     if st.session_state["y_true"] and st.session_state["y_pred"]:
         adjusted_y_true = st.session_state["y_true"][:len(st.session_state["y_pred"])]
         cm = confusion_matrix(adjusted_y_true, st.session_state["y_pred"], labels=[0, 1])
@@ -248,73 +212,77 @@ def update_metrics():
 
         TN, FP, FN, TP = cm.ravel() if cm.size == 4 else (0, 0, 0, 0)
         
-    
         # Calculate specificity and sensitivity
         specificity = TN / (TN + FP) if (TN + FP) != 0 else 0
         sensitivity = recall  # Sensitivity is equivalent to recall in binary classification
 
-        st.session_state["sensitivity_placeholder"].markdown(
-            f"""
-            <div class="metric-box">Sensitivity: {sensitivity * 100:.2f}%</div>
-            """,
-            unsafe_allow_html=True
-        )
-        st.session_state["specificity_placeholder"].markdown(
-            f"""
-            <div class="metric-box">Specificity: {specificity * 100:.2f}%</div>
-            """,
-            unsafe_allow_html=True
-        )
-        
-        # Update confusion matrix and metrics in the sidebar
-        st.session_state["confusion_matrix_placeholder"].markdown(
-            pd.DataFrame(cm, columns=["Pred. Unans", "Pred. Ans"], index=["Actual Unans", "Actual ans"])
-            .to_html(classes="curved-table", escape=False),
-            unsafe_allow_html=True
-        )
-        # Accuracy, Precision, and Recall
-        st.session_state["accuracy_placeholder"].markdown(
-            f"""
-            <div class="performance-box">Accuracy: {accuracy * 100:.2f}%</div>
-            """,
-            unsafe_allow_html=True
-        )
-        st.session_state["precision_placeholder"].markdown(
-            f"""
-            <div class="performance-box">Precision: {precision * 100:.2f}%</div>
-            """,
-            unsafe_allow_html=True
-        )
-        st.session_state["recall_placeholder"].markdown(
-            f"""
-            <div class="performance-box">F1 Score: {recall * 100:.2f}%</div>
-            """,
-            unsafe_allow_html=True
-        )
+        # Display important metrics in the sidebar
+        important_metrics = [
+            ("Sensitivity", sensitivity),
+            ("Specificity", specificity),
+        ]
+        imp_container = st.sidebar.empty()
+        with imp_container.container():
+            for metric_name, metric_value in important_metrics:
+                st.markdown(f"<div class='important-metrics'>{metric_name}: {metric_value:.2f}</div>", unsafe_allow_html=True)
+
+        # Create a DataFrame for the confusion matrix
+        data = {
+            'Predicted +': [f"{TP} (TP)", f"{FP} (FP)"],
+            'Predicted -': [f"{FN} (FN)", f"{TN} (TN)"],
+        }
+        index_labels = ["Actual +", "Actual -"]
+        df = pd.DataFrame(data, index=index_labels)
+
+        # Style the DataFrame using .applymap
+        styled_df = df.style.applymap(color_cells)
+        st.sidebar.write(styled_df.to_html(), unsafe_allow_html=True)
+
+        # Display normal metrics in the sidebar
+        performance_metrics = [
+            ("Accuracy", accuracy),
+            ("Precision", precision),
+            ("F1 Score", 2 * (precision * recall) / (precision + recall) if (precision + recall) != 0 else 0),
+        ]
+        normal_container = st.sidebar.empty()
+        time.sleep(0.5)
+        with normal_container.container():
+            for metric_name, metric_value in performance_metrics:
+                st.markdown(f"<div class='normal-metrics'>{metric_name}: {metric_value:.2f}</div>", unsafe_allow_html=True)
 
     else:
-        st.session_state["sensitivity_placeholder"].markdown("<div class='metric-box'>Sensitivity: 0.0</div>", unsafe_allow_html=True)
-        st.session_state["specificity_placeholder"].markdown("<div class='metric-box'>Specificity: 0.0</div>", unsafe_allow_html=True)
-        # Render the table
-        cm_values = [
-            [f"{0} (TN)", f"{0} (FP)"],  # First row: Pred. Ans, Pred. Unans
-            [f"{0} (FN)", f"{0} (TP)"]   # Second row: Actual Ans, Actual Unans
+        # Display important metrics in the sidebar
+        important_metrics = [
+            ("Sensitivity", "N/A"),
+            ("Specificity", "N/A"),
         ]
-        conf_matrix_df = pd.DataFrame(
-            cm_values, 
-            columns=["Pred. Unans", "Pred. Ans"], 
-            index=["Actual Unans", "Actual Ans"]
-        )
-        st.session_state["confusion_matrix_placeholder"].markdown(
-            conf_matrix_df.to_html(classes="curved-table", escape=False),
-            unsafe_allow_html=True
-        )
-        st.session_state["accuracy_placeholder"].markdown("<div class='performance-box'>Accuracy: 0.0</div>", unsafe_allow_html=True)
-        st.session_state["precision_placeholder"].markdown("<div class='performance-box'>Precision: 0.0</div>", unsafe_allow_html=True)
-        st.session_state["recall_placeholder"].markdown("<div class='performance-box'>F1 Score: 0.0</div>", unsafe_allow_html=True)
+        imp_container = st.sidebar.empty()
+        with imp_container.container():
+            for metric_name, metric_value in important_metrics:
+                st.markdown(f"<div class='important-metrics'>{metric_name}: {metric_value}</div>", unsafe_allow_html=True)
 
-    
+        # Create a DataFrame for the confusion matrix
+        data = {
+            'Predicted +': [f"NA (TP)", f"NA (FP)"],
+            'Predicted -': [f"NA (FN)", f"NA (TN)"],
+        }
+        index_labels = ["Actual +", "Actual -"]
+        df = pd.DataFrame(data, index=index_labels)
 
+        # Style the DataFrame using .applymap
+        styled_df = df.style.applymap(color_cells)
+        st.sidebar.write(styled_df.to_html(), unsafe_allow_html=True)
+
+        # Display normal metrics in the sidebar
+        performance_metrics = [
+            ("Accuracy", "N/A"),
+            ("Precision", "N/A"),
+            ("F1 Score", "N/A"),
+        ]
+        normal_container = st.sidebar.empty()
+        with normal_container.container():
+            for metric_name, metric_value in performance_metrics:
+                st.markdown(f"<div class='normal-metrics'>{metric_name}: {metric_value}</div>", unsafe_allow_html=True)
 
 def handle_feedback(index):
     # Check the feedback value stored in session state for thumbs feedback
@@ -323,7 +291,8 @@ def handle_feedback(index):
         update_likes(index)
     elif feedback_value == 0:
         update_dislikes(index)
-
+    else:
+        update_metrics()
 def update_likes(index):
     """Updates metrics when a response is liked."""
     previous_rating = st.session_state['rated_responses'].get(index)
@@ -335,7 +304,6 @@ def update_likes(index):
         st.session_state['user_engagement']['likes'] += 1
         st.session_state['rated_responses'][index] = 'liked'
         st.session_state["y_pred"].append(1)
-        update_metrics()
 
 def update_dislikes(index):
     """Updates metrics when a response is disliked."""
@@ -348,20 +316,4 @@ def update_dislikes(index):
         st.session_state['user_engagement']['dislikes'] += 1
         st.session_state['rated_responses'][index] = 'disliked'
         st.session_state["y_pred"].append(0)
-        update_metrics()
-
-# Rate-limiting setup
-REQUEST_LOG = defaultdict(list)  # Tracks requests per IP
-MAX_REQUESTS = 5  # Max requests allowed
-WINDOW_SECONDS = 60  # Time window in seconds
-
-def is_rate_limited(ip):
-    """Check if an IP is exceeding the request limit."""
-    now = time.time()
-    REQUEST_LOG[ip] = [timestamp for timestamp in REQUEST_LOG[ip] if now - timestamp < WINDOW_SECONDS]
-
-    if len(REQUEST_LOG[ip]) < MAX_REQUESTS:
-        REQUEST_LOG[ip].append(now)
-        return False  # Not rate-limited
-
-    return True  # Rate-limited
+        
