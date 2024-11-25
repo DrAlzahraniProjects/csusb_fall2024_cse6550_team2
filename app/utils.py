@@ -115,7 +115,6 @@ def initialize_session_state():
     if 'title_placeholder' not in st.session_state:
         st.session_state['title_placeholder'] = st.empty()
 
-
 def typing_title_animation(title, delay=0.1):
     """Animates typing effect for a given title."""
     title_placeholder = st.empty()
@@ -150,7 +149,6 @@ def reset_metrics():
     # Optionally, you could call `update_metrics()` here if you want to immediately reset the values to zero in the sidebar
     update_metrics()
 
-
 def initialize_metrics_sidebar():
     """Initializes sidebar placeholders for metrics and confusion matrix in an expanded UI."""
     
@@ -174,7 +172,6 @@ def initialize_metrics_sidebar():
     
     # Initial update to display zeroed or default metrics
     update_metrics()
-
 
 def update_metrics():
     st.markdown(
@@ -333,9 +330,6 @@ def update_metrics():
         # st.session_state["precision_placeholder"].write("Precision: N/A")
         # st.session_state["recall_placeholder"].write("Recall: N/A")
 
-    
-
-
 def handle_feedback(index):
     # Check the feedback value stored in session state for thumbs feedback
     feedback_value = st.session_state.get(f"feedback_{index}")
@@ -372,16 +366,18 @@ def update_dislikes(index):
 
 # Rate-limiting setup
 REQUEST_LOG = defaultdict(list)  # Tracks requests per IP
-MAX_REQUESTS = 5  # Max requests allowed
+MAX_REQUESTS = 10  # Max requests allowed
 WINDOW_SECONDS = 60  # Time window in seconds
 
-def is_rate_limited(ip):
-    """Check if an IP is exceeding the request limit."""
+def is_rate_limited(ip, action_type="general"):
+    """Check if an IP is exceeding the request limit based on action type."""
     now = time.time()
-    REQUEST_LOG[ip] = [timestamp for timestamp in REQUEST_LOG[ip] if now - timestamp < WINDOW_SECONDS]
 
-    if len(REQUEST_LOG[ip]) < MAX_REQUESTS:
+    # Only track rate-limiting for general actions (like querying the model)
+    if action_type == "general":
+        REQUEST_LOG[ip] = [timestamp for timestamp in REQUEST_LOG[ip] if now - timestamp < WINDOW_SECONDS]
+        if len(REQUEST_LOG[ip]) >= MAX_REQUESTS:
+            return True
         REQUEST_LOG[ip].append(now)
-        return False  # Not rate-limited
-
-    return True  # Rate-limited
+    
+    return False  # No rate-limiting for non-general actions

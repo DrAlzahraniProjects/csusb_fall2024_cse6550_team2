@@ -25,7 +25,7 @@ initialize_session_state()
 # Get client IP for rate limiting
 client_ip = st.session_state.get("client_ip", "unknown") 
 
-if is_rate_limited(client_ip):
+if is_rate_limited(client_ip,action_type="general"):
     st.warning("Too many requests! Please wait a while before trying again.")
 else:
     # Proceed only if API key is set
