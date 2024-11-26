@@ -149,6 +149,8 @@ def reset_metrics():
     
     # Optionally, you could call `update_metrics()` here if you want to immediately reset the values to zero in the sidebar
     update_metrics()
+    initialize_metrics_sidebar()
+    
 
 
 def initialize_metrics_sidebar():
