@@ -92,7 +92,7 @@ This section includes a set of questions that our chatbot can and cannot answer.
 | Provide a list of faculty and staff in the CSE department.                               | What is the history of CSUSB?                                            |
 | How can I make an advising appointment?                                                 | Tell me about the Entrepreneurship programs.                             |
 | How can I check my class schedule?                                                      | Can you name the public administration faculty members?                  |
-| What courses are offered for undergraduate students?                                     | What are the Art and Letter perspectives at CSUSB?                       |
+| What courses are offered for undergraduate students?                                     | What are the Art and Letter perspectives?                       |
 | What are the student internship opportunities?                                           | Is IST a course in the CSE department?                                   |
 | How do I get remote lab access?                                                         | What is ATI?                                                             |
 | How can I join the CSE club?                                                            | Where are the CSU FILA awards held?                                      |
