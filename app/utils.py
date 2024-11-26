@@ -251,7 +251,12 @@ def update_metrics():
         # Calculate specificity and sensitivity
         specificity = TN / (TN + FP) if (TN + FP) != 0 else 0
         sensitivity = recall  # Sensitivity is equivalent to recall in binary classification
-
+        # st.sidebar.markdown(
+        #     """
+        #     <h2><a href="https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team2?tab=readme-ov-file#SQA-Table" target="_blank" style="text-decoration: none; color: inherit;">Metrix Summary</a></h2>
+        #     """, 
+        #     unsafe_allow_html=True
+        # )
         st.session_state["sensitivity_placeholder"].markdown(
             f"""
             <div class="metric-box">Sensitivity: {sensitivity * 100:.2f}%</div>
@@ -333,6 +338,7 @@ def update_metrics():
 def handle_feedback(index):
     # Check the feedback value stored in session state for thumbs feedback
     feedback_value = st.session_state.get(f"feedback_{index}")
+    print(f"Feedback received for response at index {index},{feedback_value}")
     if feedback_value == 1:
         update_likes(index)
     elif feedback_value == 0:
@@ -367,7 +373,7 @@ def update_dislikes(index):
 # Rate-limiting setup
 REQUEST_LOG = defaultdict(list)  # Tracks requests per IP
 MAX_REQUESTS = 10  # Max requests allowed
-WINDOW_SECONDS = 60  # Time window in seconds
+WINDOW_SECONDS = 180  # Time window in seconds
 
 def is_rate_limited(ip, action_type="general"):
     """Check if an IP is exceeding the request limit based on action type."""

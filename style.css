@@ -39,3 +39,6 @@ div[data-testid="stVerticalBlock"] div:has(div.fixed-header) {
     float: left;
     clear: both;
 }
+.user-message, .assistant-message {
+    transition: all 0.3s ease;
+}
