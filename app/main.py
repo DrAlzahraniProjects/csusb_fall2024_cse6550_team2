@@ -126,7 +126,7 @@ else:
         # Sidebar Reset Button
         # Make sure the button's state persists across reruns using session_state
         if "reset_button_clicked" not in st.session_state:
-            reset_metrics()
+            # reset_metrics()
             st.session_state["reset_button_clicked"] = False  # Initialize state variable
 
         if st.sidebar.button("Reset Metrics") or st.session_state["reset_button_clicked"]:
