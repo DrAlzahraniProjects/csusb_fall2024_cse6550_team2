@@ -36,7 +36,7 @@ else:
             st.session_state['title_placeholder'] = typing_title_animation("Academic Advisor Chatbot", delay=0.1)
             st.session_state['title_animated'] = True
         else:
-            st.markdown(f"""<div class="p">Academic Advisor Chatbot</div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class="chat-title">Academic Advisor Chatbot</div>""", unsafe_allow_html=True)
 
         # Load CSS styling
         with open("./style.css") as f:
@@ -120,9 +120,12 @@ else:
                     args=(index,)
                 )
 
-        # Sidebar Reset Button
-        if st.sidebar.button("Reset Metrics"):
-            reset_metrics()  # Reset all metrics and refresh the sidebar with zeroed values
+        with st.sidebar:
+            # Define a separate container for the reset button
+            reset_container = st.container()
+            if reset_container.button("Reset Metrics"):
+                reset_metrics()  # Reset all metrics and refresh the sidebar with zeroed values
+
 
     else:
         st.warning("API key is required to proceed.")

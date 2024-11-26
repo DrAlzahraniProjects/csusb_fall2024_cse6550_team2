@@ -171,67 +171,23 @@ def initialize_metrics_sidebar():
         st.session_state["accuracy_placeholder"] = st.empty()
         st.session_state["precision_placeholder"] = st.empty()
         st.session_state["recall_placeholder"] = st.empty()
-    
+    # with st.sidebar:
+    #     # Define a separate container for the reset button
+    #     reset_container = st.container()
+    #     if reset_container.button("Reset Metrics"):
+    #         reset_metrics()  # Reset all metrics and refresh the sidebar with zeroed values
     # Initial update to display zeroed or default metrics
     update_metrics()
 
 
 def update_metrics():
-    st.markdown(
+    st.sidebar.markdown(
         """
-        <style>
-        .metric-box {
-            background-color: #f0f8ff;  /* Light gray background */
-            border: 1px solid #d0e7ff;  /* Border color */
-            border-radius: 8px;  /* Rounded corners */
-            padding: 10px;  /* Inner spacing */
-            margin-bottom: 10px;  /* Space between boxes */
-            font-family: Arial, sans-serif;  /* Font style */
-            font-size: 14px;  /* Text size */
-            color: skyblue;  /* Text color */
-            font-weight: bold;  /* Bold text */
-        }
-        </style>
-        """,
+        <h2><a href="https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team2?tab=readme-ov-file#SQA-Table" target="_blank" style="text-decoration: none; color: inherit;">Metrix Summary</a></h2>
+        """, 
         unsafe_allow_html=True
     )
-    st.markdown(
-        """
-        <style>
-        .performance-box {
-            background-color: #f4f4f4;  /* Light gray background */
-            border: 1px solid #ccc;  /* Border color */
-            border-radius: 8px;  /* Rounded corners */
-            padding: 10px;  /* Inner spacing */
-            margin-bottom: 10px;  /* Space between boxes */
-            font-family: Arial, sans-serif;  /* Font style */
-            font-size: 14px;  /* Text size */
-            color: gray;  /* Text color */
-            font-weight: bold;  /* Bold text */
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-    st.markdown(
-    """
-    <style>
-    .curved-table {
-        border-collapse: separate; /* Allows border-radius to take effect */
-        border-spacing: 0; /* Ensures there’s no unwanted spacing */
-        border: 1px solid #ccc; /* Adds a border around the table */
-        border-radius: 12px; /* Rounds the table's corners */
-        overflow: hidden; /* Ensures rounded corners display properly */
-    }
-    .curved-table th, .curved-table td {
-        border: 1px solid #ccc; /* Adds borders to cells */
-        padding: 8px; /* Adds padding for readability */
-        text-align: center; /* Centers the content */
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+   
     """Updates metrics such as confusion matrix, accuracy, specificity, precision, recall, and sensitivity in the sidebar."""
     if st.session_state["y_true"] and st.session_state["y_pred"]:
         adjusted_y_true = st.session_state["y_true"][:len(st.session_state["y_pred"])]
@@ -332,6 +288,11 @@ def update_metrics():
         st.session_state["recall_placeholder"].markdown("<div class='performance-box'>F1 Score: 0.0</div>", unsafe_allow_html=True)
         # st.session_state["precision_placeholder"].write("Precision: N/A")
         # st.session_state["recall_placeholder"].write("Recall: N/A")
+    # with st.sidebar:
+    #     # Define a separate container for the reset button
+    #     reset_container = st.container()
+    #     if reset_container.button("Reset Metrics"):
+    #         reset_metrics()
 
     
 

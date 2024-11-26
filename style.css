@@ -39,3 +39,37 @@ div[data-testid="stVerticalBlock"] div:has(div.fixed-header) {
     float: left;
     clear: both;
 }
+.curved-table {
+    border-collapse: separate; /* Allows border-radius to take effect */
+    border-spacing: 0; /* Ensures there’s no unwanted spacing */
+    border: 1px solid #ccc; /* Adds a border around the table */
+    border-radius: 12px; /* Rounds the table's corners */
+    overflow: hidden; /* Ensures rounded corners display properly */
+}
+.curved-table th, .curved-table td {
+    border: 1px solid #ccc; /* Adds borders to cells */
+    padding: 8px; /* Adds padding for readability */
+    text-align: center; /* Centers the content */
+}
+.performance-box {
+    background-color: #f4f4f4;  /* Light gray background */
+    border: 1px solid #ccc;  /* Border color */
+    border-radius: 8px;  /* Rounded corners */
+    padding: 10px;  /* Inner spacing */
+    margin-bottom: 10px;  /* Space between boxes */
+    font-family: Arial, sans-serif;  /* Font style */
+    font-size: 14px;  /* Text size */
+    color: gray;  /* Text color */
+    font-weight: bold;  /* Bold text */
+}
+.metric-box {
+    background-color: #f0f8ff;  /* Light gray background */
+    border: 1px solid #d0e7ff;  /* Border color */
+    border-radius: 8px;  /* Rounded corners */
+    padding: 10px;  /* Inner spacing */
+    margin-bottom: 10px;  /* Space between boxes */
+    font-family: Arial, sans-serif;  /* Font style */
+    font-size: 14px;  /* Text size */
+    color: skyblue;  /* Text color */
+    font-weight: bold;  /* Bold text */
+}
