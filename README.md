@@ -64,7 +64,7 @@ docker run -d -p 5002:5002 -p 6002:6002 -e API_KEY=MISTRAL_API_KEY  team2_app
 
 | **Answerable Questions**                                                                 | **Unanswerable Questions**                                                |
 |------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
-| What are the faculty office hours of Dr. Khalil Dajani?                                  | Tell me about the Sociology department?                                   |
+|                                   | Tell me about the Sociology department?                                   |
 | Give me the contact information for the CSE department.                                  | Do you know where the HR office is located?                              |
 | What certificate programs are available?                                                | How can I use the weblogon service?                                      |
 | Provide a list of faculty and staff in the CSE department.                               | What is the history of CSUSB?                                            |
