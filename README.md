@@ -57,7 +57,7 @@ Make sure Docker is installed and running on your local machine. Build the Docke
 docker build -t team2_app .
 ```
 
-Run the Docker image by using the following command. Make sure you replace the "MISTRAL_API_KEY" with actual key from [Team2 Discussions Board](https://csusb.instructure.com/courses/43192/discussion_topics/419700)  :
+Run the Docker image by using the following command. Make sure you replace the "MISTRAL_API_KEY" with actual key from [Team2 Discussions Board](https://csusb.instructure.com/courses/43192/discussion_topics/419700) 
 ```
 docker run -d -p 5002:5002 -p 6002:6002 -e API_KEY=MISTRAL_API_KEY  team2_app
 ```
