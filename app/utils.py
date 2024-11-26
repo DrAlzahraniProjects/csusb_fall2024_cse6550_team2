@@ -372,7 +372,7 @@ def update_dislikes(index):
 
 # Rate-limiting setup
 REQUEST_LOG = defaultdict(list)  # Tracks requests per IP
-MAX_REQUESTS = 10  # Max requests allowed
+MAX_REQUESTS = 15  # Max requests allowed
 WINDOW_SECONDS = 180  # Time window in seconds
 
 def is_rate_limited(ip, action_type="general"):
