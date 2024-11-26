@@ -66,13 +66,13 @@ docker run -d -p 5002:5002 -p 6002:6002 -e API_KEY=MISTRAL_API_KEY  team2_app
 
 Once the docker container starts running, you can access the Academic Advising Chatbot at:
 
-**Accessing Locally Through Docker** : 
+**Accessing Locally Through Docker** 
 
 *App* - http://localhost:5002/team2/
 
 *Jupyter* -  http://localhost:6002/team2/jupyter
 
-**Accessing Through CSE Web Server** : 
+**Accessing Through CSE Web Server**
 
 *App* - https://sec.cse.csusb.edu/team2/
 
@@ -96,7 +96,7 @@ This section includes a set of questions that our chatbot can and cannot answer.
 | What are the student internship opportunities?                                           | Is IST a course in the CSE department?                                   |
 | How do I get remote lab access?                                                         | What is ATI?                                                             |
 | How can I join the CSE club?                                                            | Where are the CSU FILA awards held?                                      |
-| Can I install VMware Horizon Client?                                                    |                                                                           |
+| How I install VMware Horizon Client?                                                    |  Where is gym located?                                                                         |
 
 ---
 
