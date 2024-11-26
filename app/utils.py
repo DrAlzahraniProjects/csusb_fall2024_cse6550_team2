@@ -121,7 +121,7 @@ def typing_title_animation(title, delay=0.1):
     animated_title = ""
     for char in title:
         animated_title += char
-        title_placeholder.markdown(f"<h1 style='text-align: center; margin-top: 40px;'>{animated_title}</h1>", unsafe_allow_html=True)
+        title_placeholder.markdown(f"<h2 style='text-align: center;'>{animated_title}</h2>", unsafe_allow_html=True)
         time.sleep(delay)
     return title_placeholder
 
