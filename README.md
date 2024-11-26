@@ -88,7 +88,7 @@ This section includes a set of questions that our chatbot can and cannot answer.
 |------------------------------------------------------------------|---------------------------------------------------------|
 | Give me the contact information for the CSE department.          | Do you know where the HR office is located?             |
 | What certificate programs are available?                         | How can I use the weblogon service?                     |
-| Provide a list of faculty and staff in the CSE department.        | What is the history of CSUSB?                           |
+| Provide a list of faculty and staff in the CSE department.        | Who is the captain of baseball team CSUSB?                          |
 | How can I make an advising appointment?                          | Tell me about the Sociology department?                 |
 | How can I check my class schedule?                               | Can you name the public administration faculty members? |
 | What courses are offered for undergraduate students?             | What are the Art and Letter perspectives?               |
