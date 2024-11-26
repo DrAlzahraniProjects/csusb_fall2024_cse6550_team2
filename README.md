@@ -86,11 +86,11 @@ This section includes a set of questions that our chatbot can and cannot answer.
 
 | **Answerable Questions**                                                                 | **Unanswerable Questions**                                                |
 |------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
-|                                   | Tell me about the Sociology department?                                   |
+|                      
 | Give me the contact information for the CSE department.                                  | Do you know where the HR office is located?                              |
 | What certificate programs are available?                                                | How can I use the weblogon service?                                      |
 | Provide a list of faculty and staff in the CSE department.                               | What is the history of CSUSB?                                            |
-| How can I make an advising appointment?                                                 | Tell me about the Entrepreneurship programs.                             |
+| How can I make an advising appointment?                                                 |  Tell me about the Sociology department?                              |
 | How can I check my class schedule?                                                      | Can you name the public administration faculty members?                  |
 | What courses are offered for undergraduate students?                                     | What are the Art and Letter perspectives?                       |
 | What are the student internship opportunities?                                           | Is IST a course in the CSE department?                                   |
