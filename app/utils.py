@@ -253,7 +253,7 @@ def update_metrics():
         sensitivity = recall  # Sensitivity is equivalent to recall in binary classification
         # st.sidebar.markdown(
         #     """
-        #     <h2><a href="https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team2?tab=readme-ov-file#SQA-Table" target="_blank" style="text-decoration: none; color: inherit;">Metrix Summary</a></h2>
+        #     <h2><a href="https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team2?tab=readme-ov-file#Software-Quality-Assurance" target="_blank" style="text-decoration: none; color: inherit;">Confusion Matrix</a></h2>
         #     """, 
         #     unsafe_allow_html=True
         # )
@@ -275,7 +275,7 @@ def update_metrics():
         #     pd.DataFrame(cm, columns=["Pred. Ans", "Pred. Unans"], index=["Actual Ans", "Actual Unans"])
         # )
         st.session_state["confusion_matrix_placeholder"].markdown(
-            pd.DataFrame(cm, columns=["Pred. Unans", "Pred. Ans"], index=["Actual Unans", "Actual ans"])
+            pd.DataFrame(cm, columns=["Predicted -", "Predicted +"], index=["Actual -", "Actual +"])
             .to_html(classes="curved-table", escape=False),
             unsafe_allow_html=True
         )
@@ -315,8 +315,8 @@ def update_metrics():
         ]
         conf_matrix_df = pd.DataFrame(
             cm_values, 
-            columns=["Pred. Unans", "Pred. Ans"], 
-            index=["Actual Unans", "Actual Ans"]
+            columns=["Predicted -", "Predicted +"], 
+            index=["Actual -", "Actual -"]
         )
         st.session_state["confusion_matrix_placeholder"].markdown(
             conf_matrix_df.to_html(classes="curved-table", escape=False),
