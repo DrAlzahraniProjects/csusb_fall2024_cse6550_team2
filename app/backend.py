@@ -39,10 +39,10 @@ def retrieve_context(query_embedding, collection: Collection, limit=5):
     )
 
     # Prepare text splitter
-    # text_splitter = RecursiveCharacterTextSplitter(
-    #     chunk_size=1000,  # Chunk size to fit within token limits
-    #     chunk_overlap=100  # Overlap for continuity between chunks
-    # )
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000,  # Chunk size to fit within token limits
+        chunk_overlap=100  # Overlap for continuity between chunks
+    )
  
     # Prepare context chunks with sources
     context_chunks = []
@@ -56,10 +56,10 @@ def retrieve_context(query_embedding, collection: Collection, limit=5):
             continue
 
         # Split text content into manageable chunks
-        # text_splits = text_splitter.split_text(text_content)
+        text_splits = text_splitter.split_text(text_content)
 
         # Add each chunk with its associated URL
-        for split in text_content:
+        for split in text_splits:
             context_chunks.append({"text_content": split, "url": url,"similarity_score": similarity_score})
 
     # print("Retrieved Context Chunks:", context_chunks)
