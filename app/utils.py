@@ -343,6 +343,7 @@ def handle_feedback(index):
         update_likes(index)
     elif feedback_value == 0:
         update_dislikes(index)
+    initialize_metrics_sidebar()
 
 def update_likes(index):
     """Updates metrics when a response is liked."""

@@ -100,6 +100,7 @@ else:
                 st.session_state['total_response_time'] += time.time() - start_time
                 st.session_state['num_responses'] += 1
                 update_metrics()  # Update metrics after generating a response
+                initialize_metrics_sidebar()            
 
         # Handle user input in chat
         if prompt := st.chat_input("Message Team2 academic chatbot"):
