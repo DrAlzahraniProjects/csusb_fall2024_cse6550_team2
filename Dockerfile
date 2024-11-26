@@ -48,7 +48,7 @@ COPY requirements.txt /app/requirements.txt
 # Install Python packages from requirements.txt
 RUN mamba install --yes --file requirements.txt && mamba clean --all -f -y
 
-# Install NeMo-Guardrails
+# Install guardrails
 RUN pip install nemoguardrails
 
 # RUN pip install -qU langchain_milvus langchain-cohere nemo-curator nemoguardrails

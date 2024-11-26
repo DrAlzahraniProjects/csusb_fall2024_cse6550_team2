@@ -1,16 +1,23 @@
 corpus_source = "https://www.csusb.edu"
 
-
 import time
 from pymilvus import connections, utility, Collection, CollectionSchema, FieldSchema, DataType
 from sentence_transformers import SentenceTransformer
 from bs4 import BeautifulSoup
 import requests
+import re
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Base configuration
 
 start_url = f"{corpus_source}/cse"
 MILVUS_URI = "milvus_vector.db"
+
+def clean_text(text):
+    """Clean text by removing unnecessary whitespace and non-alphanumeric characters."""
+    text = re.sub(r"\s+", " ", text)  # Replace multiple spaces/newlines with a single space
+    text = re.sub(r"[^\w\s.,!?-]", "", text)  # Remove non-alphanumeric characters
+    return text.strip()
 
 def scrape_page(url, section_name):
     """Scrape individual page and add to data list."""
@@ -22,7 +29,7 @@ def scrape_page(url, section_name):
         page_data = {
             "url": url,
             "section": section_name,
-            "title": soup.title.string if soup.title else "No title",
+            "title": clean_text(soup.title.string) if soup.title else "No title",
             "content": []
         }
 
@@ -31,13 +38,14 @@ def scrape_page(url, section_name):
             for element in soup.find_all(tag):
                 text = element.get_text(strip=True)
                 if text:
-                    page_data["content"].append({"type": tag, "text": text})
+                    cleaned_text = clean_text(text)
+                    page_data["content"].append({"type": tag, "text": cleaned_text})
 
         # Extract tables
         for table in soup.find_all("table"):
             table_data = []
             for row in table.find_all("tr"):
-                row_data = [cell.get_text(strip=True) for cell in row.find_all(["th", "td"])]
+                row_data = [clean_text(cell.get_text(strip=True)) for cell in row.find_all(["th", "td"])]
                 if row_data:
                     table_data.append(row_data)
             if table_data:
@@ -57,7 +65,8 @@ def scrape_page(url, section_name):
             text = link.get_text(strip=True)
             if text and (href.startswith("http") or href.startswith("/")):
                 full_url = href if href.startswith("http") else corpus_source + href
-                page_data["content"].append({"type": "link", "text": text, "url": full_url})
+                cleaned_text = clean_text(text)
+                page_data["content"].append({"type": "link", "text": cleaned_text, "url": full_url})
         time.sleep(1)
         return page_data
     except Exception as e:
@@ -89,6 +98,41 @@ def scrape_main_page(start_url):
         print(f"Error scraping {start_url}: {e}")
 
     return data  # Return the collected data
+
+
+def chunk_data(data):
+    """
+    Split the text content into manageable chunks using RecursiveCharacterTextSplitter.
+
+    Args:
+        data (list): List of scraped data dictionaries.
+
+    Returns:
+        list: List of chunked data with metadata.
+    """
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=500,
+        chunk_overlap=50,
+    )
+    chunked_data = []
+
+    for page in data:
+        combined_text = ""
+        for content in page.get("content", []):
+            if content["type"] in ["h1", "h2", "h3", "p", "li", "div","table","image"]:
+                combined_text += content["text"] + " "
+
+        text_chunks = splitter.split_text(combined_text)
+
+        for chunk in text_chunks:
+            chunked_data.append({
+                "url": page["url"],
+                "section": page["section"],
+                "title": page.get("title", "No title"),
+                "text_chunk": chunk
+            })
+
+    return chunked_data
 
 def initialize_milvus(data):
     """Initialize Milvus, create collection, and insert data."""
@@ -129,11 +173,8 @@ def initialize_and_scrape():
     if not data:
         print("No data was scraped. Please check the scraper.")
         return
-    # for item in data:
-    #     print(f"URL: {item['url']}")
-    # for content in item['content']:
-    #     print(f"Type: {content['type']}, Text: {content.get('text', '')}")
-    
+
+    # chunked_data = chunk_data(data)
     print(f"Total pages scraped: {len(data)}")
    
     # Initialize Milvus and insert data

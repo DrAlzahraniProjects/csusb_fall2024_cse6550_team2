@@ -115,7 +115,6 @@ def initialize_session_state():
     if 'title_placeholder' not in st.session_state:
         st.session_state['title_placeholder'] = st.empty()
 
-
 def typing_title_animation(title, delay=0.1):
     """Animates typing effect for a given title."""
     title_placeholder = st.empty()
@@ -150,13 +149,12 @@ def reset_metrics():
     # Optionally, you could call `update_metrics()` here if you want to immediately reset the values to zero in the sidebar
     update_metrics()
 
-
 def initialize_metrics_sidebar():
     """Initializes sidebar placeholders for metrics and confusion matrix in an expanded UI."""
     
     st.sidebar.markdown(
         """
-        <h2><a href="https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team2?tab=readme-ov-file#SQA-Table" target="_blank" style="text-decoration: none; color: inherit;">Metrix Summary</a></h2>
+        <h2><a href="https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team2?tab=readme-ov-file#Software-Quality-Assurance" target="_blank" style="text-decoration: none; color: inherit;">Confusion Matrix</a></h2>
         """, 
         unsafe_allow_html=True
     )
@@ -174,7 +172,6 @@ def initialize_metrics_sidebar():
     
     # Initial update to display zeroed or default metrics
     update_metrics()
-
 
 def update_metrics():
     st.markdown(
@@ -254,7 +251,12 @@ def update_metrics():
         # Calculate specificity and sensitivity
         specificity = TN / (TN + FP) if (TN + FP) != 0 else 0
         sensitivity = recall  # Sensitivity is equivalent to recall in binary classification
-
+        # st.sidebar.markdown(
+        #     """
+        #     <h2><a href="https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team2?tab=readme-ov-file#Software-Quality-Assurance" target="_blank" style="text-decoration: none; color: inherit;">Confusion Matrix</a></h2>
+        #     """, 
+        #     unsafe_allow_html=True
+        # )
         st.session_state["sensitivity_placeholder"].markdown(
             f"""
             <div class="metric-box">Sensitivity: {sensitivity * 100:.2f}%</div>
@@ -273,7 +275,7 @@ def update_metrics():
         #     pd.DataFrame(cm, columns=["Pred. Ans", "Pred. Unans"], index=["Actual Ans", "Actual Unans"])
         # )
         st.session_state["confusion_matrix_placeholder"].markdown(
-            pd.DataFrame(cm, columns=["Pred. Unans", "Pred. Ans"], index=["Actual Unans", "Actual ans"])
+            pd.DataFrame(cm, columns=["Predicted -", "Predicted +"], index=["Actual -", "Actual +"])
             .to_html(classes="curved-table", escape=False),
             unsafe_allow_html=True
         )
@@ -313,8 +315,8 @@ def update_metrics():
         ]
         conf_matrix_df = pd.DataFrame(
             cm_values, 
-            columns=["Pred. Unans", "Pred. Ans"], 
-            index=["Actual Unans", "Actual Ans"]
+            columns=["Predicted -", "Predicted +"], 
+            index=["Actual -", "Actual -"]
         )
         st.session_state["confusion_matrix_placeholder"].markdown(
             conf_matrix_df.to_html(classes="curved-table", escape=False),
@@ -333,12 +335,10 @@ def update_metrics():
         # st.session_state["precision_placeholder"].write("Precision: N/A")
         # st.session_state["recall_placeholder"].write("Recall: N/A")
 
-    
-
-
 def handle_feedback(index):
     # Check the feedback value stored in session state for thumbs feedback
     feedback_value = st.session_state.get(f"feedback_{index}")
+    print(f"Feedback received for response at index {index},{feedback_value}")
     if feedback_value == 1:
         update_likes(index)
     elif feedback_value == 0:
@@ -372,16 +372,18 @@ def update_dislikes(index):
 
 # Rate-limiting setup
 REQUEST_LOG = defaultdict(list)  # Tracks requests per IP
-MAX_REQUESTS = 10  # Max requests allowed
-WINDOW_SECONDS = 5  # Time window in seconds
+MAX_REQUESTS = 15  # Max requests allowed
+WINDOW_SECONDS = 180  # Time window in seconds
 
-def is_rate_limited(ip):
-    """Check if an IP is exceeding the request limit."""
+def is_rate_limited(ip, action_type="general"):
+    """Check if an IP is exceeding the request limit based on action type."""
     now = time.time()
-    REQUEST_LOG[ip] = [timestamp for timestamp in REQUEST_LOG[ip] if now - timestamp < WINDOW_SECONDS]
 
-    if len(REQUEST_LOG[ip]) < MAX_REQUESTS:
+    # Only track rate-limiting for general actions (like querying the model)
+    if action_type == "general":
+        REQUEST_LOG[ip] = [timestamp for timestamp in REQUEST_LOG[ip] if now - timestamp < WINDOW_SECONDS]
+        if len(REQUEST_LOG[ip]) >= MAX_REQUESTS:
+            return True
         REQUEST_LOG[ip].append(now)
-        return False  # Not rate-limited
-
-    return True  # Rate-limited
+    
+    return False  # No rate-limiting for non-general actions

@@ -10,6 +10,11 @@ import httpx
 
 # Page configuration
 st.set_page_config(page_title="Academic Chatbot - Team2")
+
+# Load CSS styling
+with open("./style.css") as f:
+    st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
 # Prompt for API key if not already provided
 if "api_key" not in st.session_state:
     api_key = os.environ.get("API_KEY")
@@ -25,12 +30,13 @@ initialize_session_state()
 # Get client IP for rate limiting
 client_ip = st.session_state.get("client_ip", "unknown") 
 
-if is_rate_limited(client_ip):
-    st.warning("Too many requests! Please wait a while before trying again.")
+if is_rate_limited(client_ip,action_type="general"):
+    st.warning("Too many requests! Please wait 2 minutes before trying again.")
 else:
     # Proceed only if API key is set
     if "API_KEY" in os.environ:
-        
+        initialize_metrics_sidebar()
+        # title_placeholder = st.empty()  # Placeholder for title
         # Typing animation for title
         if not st.session_state['input_given'] and not st.session_state['title_animated']:
             st.session_state['title_placeholder'] = typing_title_animation("Academic Advisor Chatbot", delay=0.1)
@@ -38,17 +44,13 @@ else:
         else:
             st.markdown(f"""<h2 style='text-align: center;' class="p">Academic Advisor Chatbot</h2>""", unsafe_allow_html=True)
 
-        # Load CSS styling
-        with open("./style.css") as f:
-            st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-       
         # Ensure `initialize_and_scrape()` runs only once
         if 'milvus_initialized' not in st.session_state:
             st.session_state['milvus_initialized'] = False  # Default state
 
             # Placeholder for the dynamic loader
             spinner_placeholder = st.empty()
-            initialization_time = 120  # Estimated initialization time in seconds
+            initialization_time = 60 # Estimated initialization time in seconds
 
             # Display spinner and dynamic timer
             with st.spinner("Initializing Milvus..."):
@@ -64,7 +66,7 @@ else:
 
                     # Run Milvus initialization in the first second
                     if remaining_time == initialization_time:
-                        initialize_metrics_sidebar()
+                        
                         initialize_and_scrape()
 
                     # Exit the loop if initialization completes early
@@ -86,6 +88,7 @@ else:
             with st.spinner('Generating Response, Please Wait...'):
                 try:
                     response = invoke_llm_for_response(prompt)
+                    time.sleep(2) 
                 except MilvusException as e:
                     response = "Error: Query format issue. Try a more detailed question." if "vector type must be the same" in str(e) else f"Error: {e}"
                 except httpx.HTTPStatusError as e:
@@ -121,8 +124,14 @@ else:
                 )
 
         # Sidebar Reset Button
-        if st.sidebar.button("Reset Metrics"):
+        # Make sure the button's state persists across reruns using session_state
+        if "reset_button_clicked" not in st.session_state:
+            # reset_metrics()
+            st.session_state["reset_button_clicked"] = False  # Initialize state variable
+
+        if st.sidebar.button("Reset Metrics") or st.session_state["reset_button_clicked"]:
             reset_metrics()  # Reset all metrics and refresh the sidebar with zeroed values
+            st.session_state["reset_button_clicked"] = True  # Mark the button as clicked
 
     else:
         st.warning("API key is required to proceed.")
