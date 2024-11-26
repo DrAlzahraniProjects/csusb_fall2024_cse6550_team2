@@ -96,7 +96,7 @@ This section includes a set of questions that our chatbot can and cannot answer.
 | How do I get remote lab access?                                  | What is ATI?                                            |
 | How can I join the CSE club?                                     | Where are the CSU FILA awards held?                     |
 | How do I install VMware Horizon Client?                         | Where is the gym located?                               |
-
+| Tell me the name of the director?                               | Tell me about docker?
 ---
 
 ## Troubleshooting
