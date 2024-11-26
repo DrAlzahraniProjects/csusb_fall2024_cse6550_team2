@@ -173,13 +173,10 @@ def initialize_and_scrape():
     if not data:
         print("No data was scraped. Please check the scraper.")
         return
-    # for item in data:
-    #     print(f"URL: {item['url']}")
-    # for content in item['content']:
-    #     print(f"Type: {content['type']}, Text: {content.get('text', '')}")
-    chunked_data = chunk_data(data)
+
+    # chunked_data = chunk_data(data)
     print(f"Total pages scraped: {len(data)}")
    
     # Initialize Milvus and insert data
-    initialize_milvus(chunked_data)
+    initialize_milvus(data)
     
