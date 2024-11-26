@@ -122,7 +122,7 @@ def typing_title_animation(title, delay=0.1):
     animated_title = ""
     for char in title:
         animated_title += char
-        title_placeholder.markdown(f"<h1 style='text-align: center; margin-top: 40px;'>{animated_title}</h1>", unsafe_allow_html=True)
+        title_placeholder.markdown(f"<h2 style='text-align: center;'>{animated_title}</h2>", unsafe_allow_html=True)
         time.sleep(delay)
     return title_placeholder
 
@@ -372,8 +372,8 @@ def update_dislikes(index):
 
 # Rate-limiting setup
 REQUEST_LOG = defaultdict(list)  # Tracks requests per IP
-MAX_REQUESTS = 5  # Max requests allowed
-WINDOW_SECONDS = 60  # Time window in seconds
+MAX_REQUESTS = 10  # Max requests allowed
+WINDOW_SECONDS = 5  # Time window in seconds
 
 def is_rate_limited(ip):
     """Check if an IP is exceeding the request limit."""

@@ -36,7 +36,7 @@ else:
             st.session_state['title_placeholder'] = typing_title_animation("Academic Advisor Chatbot", delay=0.1)
             st.session_state['title_animated'] = True
         else:
-            st.markdown(f"""<div class="p">Academic Advisor Chatbot</div>""", unsafe_allow_html=True)
+            st.markdown(f"""<h2 style='text-align: center;' class="p">Academic Advisor Chatbot</h2>""", unsafe_allow_html=True)
 
         # Load CSS styling
         with open("./style.css") as f:
