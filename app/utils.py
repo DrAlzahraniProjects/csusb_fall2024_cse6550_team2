@@ -154,7 +154,7 @@ def initialize_metrics_sidebar():
     
     st.sidebar.markdown(
         """
-        <h2><a href="https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team2?tab=readme-ov-file#Software-Quality-Assurance" target="_blank" style="text-decoration: none; color: inherit;">Metrix Summary</a></h2>
+        <h2><a href="https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team2?tab=readme-ov-file#Software-Quality-Assurance" target="_blank" style="text-decoration: none; color: inherit;">Confusion Matrix</a></h2>
         """, 
         unsafe_allow_html=True
     )
