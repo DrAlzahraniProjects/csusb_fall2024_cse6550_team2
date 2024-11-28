@@ -50,7 +50,14 @@ COPY requirements.txt /app/requirements.txt
 
 # Install Python packages from requirements.txt
 RUN mamba install --yes --file requirements.txt && mamba clean --all -f -y
+# Install Rust and Cargo
+RUN apt-get update && apt-get install -y \
+    curl \
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
+    && source $HOME/.cargo/env
 
+# Add Rust to the PATH
+ENV PATH=/root/.cargo/bin:$PATH
 # Install additional Python packages (including NeMo Guardrails)
 RUN pip install nemoguardrails pymilvus[model] langchain langchain_community langchain_huggingface langchain_milvus beautifulsoup4 requests nltk langchain_mistralai sentence-transformers
 
