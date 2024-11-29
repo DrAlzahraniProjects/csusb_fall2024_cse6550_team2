@@ -1,5 +1,5 @@
 # Imports
-from web_crawler import initialize_and_scrape
+from initialize_milvus import initialize_and_scrape
 from utils import initialize_metrics_sidebar, initialize_session_state, is_rate_limited, update_metrics, reset_metrics, typing_title_animation, update_likes, update_dislikes, handle_feedback
 import streamlit as st
 import os
@@ -44,39 +44,40 @@ else:
         else:
             st.markdown(f"""<h2 style='text-align: center;' class="p">Academic Advisor Chatbot</h2>""", unsafe_allow_html=True)
 
-        # Ensure `initialize_and_scrape()` runs only once
+        # Define initialization time at the top level
+        initialization_time = 60  # Estimated initialization time in seconds
+
+# Ensure `initialize_and_scrape()` runs only once
         if 'milvus_initialized' not in st.session_state:
             st.session_state['milvus_initialized'] = False  # Default state
 
             # Placeholder for the dynamic loader
             spinner_placeholder = st.empty()
-            initialization_time = 60 # Estimated initialization time in seconds
 
             # Display spinner and dynamic timer
             with st.spinner("Initializing Milvus..."):
-                for remaining_time in range(initialization_time, 0, -1):
-                    # Calculate minutes and seconds
-                    minutes, seconds = divmod(remaining_time, 60)
+                    for remaining_time in range(initialization_time, 0, -1):
+                        # Calculate minutes and seconds
+                        minutes, seconds = divmod(remaining_time, 60)
 
-                    # Update the timer in the UI
-                    spinner_placeholder.markdown(
-                        f"<h4 style='text-align: center;'>Please wait for {minutes} minute(s) {seconds} second(s)</h4>",
-                        unsafe_allow_html=True
-                    )
+                        # Update the timer in the UI
+                        spinner_placeholder.markdown(
+                            f"<h4 style='text-align: center;'>Please wait for {minutes} minute(s) {seconds} second(s)</h4>",
+                            unsafe_allow_html=True
+                        )
 
-                    # Run Milvus initialization in the first second
-                    if remaining_time == initialization_time:
-                        
-                        initialize_and_scrape()
+                        # Run Milvus initialization in the first second
+                        if remaining_time == initialization_time:
+                            initialize_and_scrape()
 
-                    # Exit the loop if initialization completes early
-                    if st.session_state.get('milvus_initialized', False):
-                        break
+                        # Exit the loop if initialization completes early
+                        if st.session_state.get('milvus_initialized', False):
+                            break
 
-                    time.sleep(0.2)  # Wait for 1 second
+                        time.sleep(0.2)  # Wait for 0.2 seconds to create a smoother timer effect
 
-            # Clear the spinner and show success or error message
-            spinner_placeholder.empty()
+                    # Clear the spinner and show success or error message
+                    spinner_placeholder.empty()  # Clear the spinner
         # st.session_state['milvus_initialized'] = True
         # spinner_placeholder.empty()  # Clear the spinner
         # Function to process user input and generate bot response

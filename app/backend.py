@@ -37,11 +37,12 @@ def retrieve_context(query_embedding, collection: Collection, limit=5):
         limit=limit,
         output_fields=["text_content", "url"]
     )
+    print("Results when search:", results)
 
     # Prepare text splitter
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,  # Chunk size to fit within token limits
-        chunk_overlap=100  # Overlap for continuity between chunks
+        chunk_size=512,  # Chunk size to fit within token limits
+        chunk_overlap=50  # Overlap for continuity between chunks
     )
  
     # Prepare context chunks with sources
@@ -115,7 +116,9 @@ def invoke_llm_for_response(query):
         if context_chunks:
             most_relevant_chunk = context_chunks[0]
             context = most_relevant_chunk["text_content"]
+            print("Context:most_relevant_chunk", context)
             sources = [most_relevant_chunk["url"]]
+            print("Sources:most_relevant_chunk", sources)
         else:
             context = "I don't have enough information to answer this question."
             sources = []  # Ensure no sources are attached
