@@ -28,11 +28,11 @@ def initialize_milvus(data):
     MAX_TEXT_LENGTH = 50000
 
     for idx, item in enumerate(data):
-        # text_content = " ".join([content.get("text", "") for content in item.get("content", [])])
-        text_content = " ".join([
-            content.get("text", "").strip() + " " + content.get("data", "").strip()
-            for content in item.get("content", [])
-        ]).strip()
+        text_content = " ".join([content.get("text", "") for content in item.get("content", [])])
+        # text_content = " ".join([
+        #     content.get("text", "").strip() + " " + content.get("data", "").strip()
+        #     for content in item.get("content", [])
+        # ]).strip()
 
         text_content = text_content[:MAX_TEXT_LENGTH]
         embedding = model.encode(text_content).tolist()

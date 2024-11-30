@@ -26,7 +26,7 @@ def get_api_key():
     return api_key
 
 # Function to retrieve and split context from Milvus
-def retrieve_context(query_embedding, collection: Collection, limit=5):
+def retrieve_context(query_embedding, collection: Collection, limit=3):
     """Retrieve relevant context from Milvus along with their source URLs."""
     search_params = {"metric_type": "L2", "params": {"nprobe": 20}}
     
