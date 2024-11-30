@@ -138,14 +138,7 @@ def reset_metrics():
     st.session_state["y_pred"] = []
     st.session_state['total_response_time'] = 0
     
-    # Ensure feedback keys are cleared
-    feedback_keys = [key for key in st.session_state.keys() if key.startswith("feedback_")]
-    for key in feedback_keys:
-        del st.session_state[key]
-        # st.session_state[f"feedback_{key}"] = None  # Safely remove feedback keys
-
-    # for index in range(len(st.session_state.get('messages', []))):
-    #     st.session_state[f"feedback_{index}"] = None  # Default to None (no feedback given yet)
+   
     # Clear confusion matrix and performance metrics
     st.session_state["confusion_matrix_placeholder"].empty()
     st.session_state["accuracy_placeholder"].empty()
@@ -157,9 +150,9 @@ def reset_metrics():
     # Reset feedback keys
     # reset_feedback_keys()
     del st.session_state["reset_button_clicked"]
-    # for debuging
-    print("Rated Responses after reset:", st.session_state['rated_responses'])
-    print("Feedback keys after reset:", [key for key in st.session_state.keys() if key.startswith("feedback_")])
+    # # for debuging
+    # print("Rated Responses after reset:", st.session_state['rated_responses'])
+    # print("Feedback keys after reset:", [key for key in st.session_state.keys() if key.startswith("feedback_")])
 
     update_metrics()
     
@@ -244,7 +237,7 @@ def update_metrics():
     """,
     unsafe_allow_html=True
 )
-    print('start update')
+    # print('start update')
     """Updates metrics such as confusion matrix, accuracy, specificity, precision, recall, and sensitivity in the sidebar."""
     if st.session_state["y_true"] and st.session_state["y_pred"]:
         adjusted_y_true = st.session_state["y_true"][:len(st.session_state["y_pred"])]
@@ -315,7 +308,7 @@ def update_metrics():
             """,
             unsafe_allow_html=True
         )
-        print("Updates metrics:data exist")
+        # print("Updates metrics:data exist")
 
         # st.session_state["precision_placeholder"].write(f"Precision: {precision * 100:.2f}%")
         # st.session_state["recall_placeholder"].write(f"Recall: {recall * 100:.2f}%")
@@ -353,9 +346,9 @@ def update_metrics():
         st.session_state["recall_placeholder"].markdown("<div class='performance-box'>F1 Score: 0.0</div>", unsafe_allow_html=True)
         # st.session_state["precision_placeholder"].write("Precision: N/A")
         # st.session_state["recall_placeholder"].write("Recall: N/A")
-        print("Updates metrics:empty")
+    #     print("Updates metrics:empty")
 
-    print("Updates metrics:")
+    # print("Updates metrics:")
 
 def handle_feedback(index):
     """Handles user feedback for a specific response."""
@@ -373,8 +366,8 @@ def handle_feedback(index):
 def update_likes(index, previous_rating):
     """Updates metrics when a response is liked."""
     #for debuging
-    print("UPDATE LIKE")
-    print(previous_rating)
+    # print("UPDATE LIKE")
+    # print(previous_rating)
     if previous_rating != 'liked':  # Avoid duplicate likes
         if previous_rating == 'disliked':
             st.session_state['num_incorrect_answers'] -= 1
@@ -389,7 +382,7 @@ def update_likes(index, previous_rating):
 def update_dislikes(index, previous_rating):
     """Updates metrics when a response is disliked."""
     #for debuging
-    print("UPDATE DISLIKE")
+    # print("UPDATE DISLIKE")
     print(previous_rating)
     if previous_rating != 'disliked':  # Avoid duplicate dislikes
         if previous_rating == 'liked':
@@ -404,7 +397,7 @@ def update_dislikes(index, previous_rating):
 
 # Rate-limiting setup
 REQUEST_LOG = defaultdict(list)  # Tracks requests per IP
-MAX_REQUESTS = 15  # Max requests allowed
+MAX_REQUESTS = 15     # Max requests allowed
 WINDOW_SECONDS = 180  # Time window in seconds
 
 def is_rate_limited(ip, action_type="general"):
