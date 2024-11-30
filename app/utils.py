@@ -125,18 +125,27 @@ def typing_title_animation(title, delay=0.1):
         time.sleep(delay)
     return title_placeholder
 
+
 def reset_metrics():
     """Resets all tracked metrics in session state."""
     # Reset engagement and response metrics
-    st.session_state['num_questions'] = 0
+    # st.session_state['num_questions'] = 0
     st.session_state['num_correct_answers'] = 0
     st.session_state['num_incorrect_answers'] = 0
     st.session_state['user_engagement'] = {'likes': 0, 'dislikes': 0}
-    st.session_state['rated_responses'] = {}
+    st.session_state['rated_responses'] = {i: None for i in range(len(st.session_state.get('messages', [])))}
     st.session_state["y_true"] = []
     st.session_state["y_pred"] = []
     st.session_state['total_response_time'] = 0
     
+    # Ensure feedback keys are cleared
+    feedback_keys = [key for key in st.session_state.keys() if key.startswith("feedback_")]
+    for key in feedback_keys:
+        del st.session_state[key]
+        # st.session_state[f"feedback_{key}"] = None  # Safely remove feedback keys
+
+    # for index in range(len(st.session_state.get('messages', []))):
+    #     st.session_state[f"feedback_{index}"] = None  # Default to None (no feedback given yet)
     # Clear confusion matrix and performance metrics
     st.session_state["confusion_matrix_placeholder"].empty()
     st.session_state["accuracy_placeholder"].empty()
@@ -145,9 +154,15 @@ def reset_metrics():
     st.session_state["sensitivity_placeholder"].empty()
     st.session_state["specificity_placeholder"].empty()
     
-    
-    # Optionally, you could call `update_metrics()` here if you want to immediately reset the values to zero in the sidebar
+    # Reset feedback keys
+    # reset_feedback_keys()
+    del st.session_state["reset_button_clicked"]
+    # for debuging
+    print("Rated Responses after reset:", st.session_state['rated_responses'])
+    print("Feedback keys after reset:", [key for key in st.session_state.keys() if key.startswith("feedback_")])
+
     update_metrics()
+    
 
 def initialize_metrics_sidebar():
     """Initializes sidebar placeholders for metrics and confusion matrix in an expanded UI."""
@@ -322,6 +337,7 @@ def update_metrics():
             conf_matrix_df.to_html(classes="curved-table", escape=False),
             unsafe_allow_html=True
         )
+        
         # st.session_state["confusion_matrix_placeholder"].markdown(
         #     pd.DataFrame(columns=["Pred. Unans", "Pred. Ans"], index=["Actual Unans", "Actual ans"])
         #     .to_html(classes="curved-table", escape=False),
@@ -336,34 +352,44 @@ def update_metrics():
         # st.session_state["recall_placeholder"].write("Recall: N/A")
 
 def handle_feedback(index):
-    # Check the feedback value stored in session state for thumbs feedback
+    """Handles user feedback for a specific response."""
     feedback_value = st.session_state.get(f"feedback_{index}")
     print(f"Feedback received for response at index {index},{feedback_value}")
-    if feedback_value == 1:
-        update_likes(index)
-    elif feedback_value == 0:
-        update_dislikes(index)
+    if feedback_value is not None:  # Ensure feedback is not None
+        previous_rating = st.session_state['rated_responses'].get(index)
+        
+        if feedback_value == 1:  # Thumbs up
+            update_likes(index, previous_rating)
+        elif feedback_value == 0:  # Thumbs downhe
+            update_dislikes(index, previous_rating)
 
-def update_likes(index):
+
+def update_likes(index, previous_rating):
     """Updates metrics when a response is liked."""
-    previous_rating = st.session_state['rated_responses'].get(index)
-    if previous_rating != 'liked':
+    #for debuging
+    print("ANJELI")
+    print(previous_rating)
+    if previous_rating != 'liked':  # Avoid duplicate likes
         if previous_rating == 'disliked':
             st.session_state['num_incorrect_answers'] -= 1
-            st.session_state["y_pred"].remove(0)
+            st.session_state["y_pred"].remove(0)  # Remove dislike
+
         st.session_state['num_correct_answers'] += 1
         st.session_state['user_engagement']['likes'] += 1
         st.session_state['rated_responses'][index] = 'liked'
         st.session_state["y_pred"].append(1)
         update_metrics()
 
-def update_dislikes(index):
+def update_dislikes(index, previous_rating):
     """Updates metrics when a response is disliked."""
-    previous_rating = st.session_state['rated_responses'].get(index)
-    if previous_rating != 'disliked':
+    #for debuging
+    print("UPDATE LIKE")
+    print(previous_rating)
+    if previous_rating != 'disliked':  # Avoid duplicate dislikes
         if previous_rating == 'liked':
             st.session_state['num_correct_answers'] -= 1
-            st.session_state["y_pred"].remove(1)
+            st.session_state["y_pred"].remove(1)  # Remove like
+
         st.session_state['num_incorrect_answers'] += 1
         st.session_state['user_engagement']['dislikes'] += 1
         st.session_state['rated_responses'][index] = 'disliked'
