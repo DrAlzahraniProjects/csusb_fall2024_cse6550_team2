@@ -134,7 +134,7 @@ def reset_metrics():
     st.session_state['num_incorrect_answers'] = 0
     st.session_state['user_engagement'] = {'likes': 0, 'dislikes': 0}
     st.session_state['rated_responses'] = {i: None for i in range(len(st.session_state.get('messages', [])))}
-    st.session_state["y_true"] = []
+    # st.session_state["y_true"] = []
     st.session_state["y_pred"] = []
     st.session_state['total_response_time'] = 0
     
@@ -244,6 +244,7 @@ def update_metrics():
     """,
     unsafe_allow_html=True
 )
+    print('start update')
     """Updates metrics such as confusion matrix, accuracy, specificity, precision, recall, and sensitivity in the sidebar."""
     if st.session_state["y_true"] and st.session_state["y_pred"]:
         adjusted_y_true = st.session_state["y_true"][:len(st.session_state["y_pred"])]
@@ -314,6 +315,8 @@ def update_metrics():
             """,
             unsafe_allow_html=True
         )
+        print("Updates metrics:data exist")
+
         # st.session_state["precision_placeholder"].write(f"Precision: {precision * 100:.2f}%")
         # st.session_state["recall_placeholder"].write(f"Recall: {recall * 100:.2f}%")
 
@@ -350,6 +353,9 @@ def update_metrics():
         st.session_state["recall_placeholder"].markdown("<div class='performance-box'>F1 Score: 0.0</div>", unsafe_allow_html=True)
         # st.session_state["precision_placeholder"].write("Precision: N/A")
         # st.session_state["recall_placeholder"].write("Recall: N/A")
+        print("Updates metrics:empty")
+
+    print("Updates metrics:")
 
 def handle_feedback(index):
     """Handles user feedback for a specific response."""
@@ -367,7 +373,7 @@ def handle_feedback(index):
 def update_likes(index, previous_rating):
     """Updates metrics when a response is liked."""
     #for debuging
-    print("ANJELI")
+    print("UPDATE LIKE")
     print(previous_rating)
     if previous_rating != 'liked':  # Avoid duplicate likes
         if previous_rating == 'disliked':
@@ -383,7 +389,7 @@ def update_likes(index, previous_rating):
 def update_dislikes(index, previous_rating):
     """Updates metrics when a response is disliked."""
     #for debuging
-    print("UPDATE LIKE")
+    print("UPDATE DISLIKE")
     print(previous_rating)
     if previous_rating != 'disliked':  # Avoid duplicate dislikes
         if previous_rating == 'liked':
