@@ -1,6 +1,7 @@
 from constants import *
 from bs4 import BeautifulSoup
 import requests
+from urllib.parse import urljoin
 
 # Website 1 - "https://www.csusb.edu/cse"
 def scrape_source_1(base_url):
