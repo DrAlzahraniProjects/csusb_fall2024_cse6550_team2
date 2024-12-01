@@ -1,19 +1,16 @@
+import os
+import httpx
+import numpy as np
 from pymilvus import Collection
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_mistralai.chat_models import ChatMistralAI
-import nltk
-import os
-import numpy as np
-import pandas as pd
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
-import httpx
-
-# Constants and Parameters
-nltk.download('punkt')
+from sklearn.feature_extraction.text import TfidfVectorizer
+from collections import Counter
+from urllib.parse import urlparse
 
 # Initialize the embedding model
 model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
@@ -25,73 +22,165 @@ def get_api_key():
         raise ValueError("API key not found. Ensure the API key is set in main.py before proceeding.")
     return api_key
 
-# Function to retrieve and split context from Milvus
-def retrieve_context(query_embedding, collection: Collection, limit=5):
-    """Retrieve relevant context from Milvus along with their source URLs."""
-    search_params = {"metric_type": "L2", "params": {"nprobe": 20}}
-    
-    results = collection.search(
-        data=[query_embedding],
-        anns_field="embedding",
-        param=search_params,
-        limit=limit,
-        output_fields=["text_content", "url"]
-    )
+def search_milvus(query):
+    """Search Milvus collection for a query and return the top results."""
+    # model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+    # Load the collection
+    collection_name="CSUSB_CSE_Data"
+    collection = Collection(name=collection_name)
+    collection.load()
 
-    # Prepare text splitter
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,  # Chunk size to fit within token limits
-        chunk_overlap=100  # Overlap for continuity between chunks
+    # Convert the query into an embedding
+    query_embedding = np.array(model.encode(query), dtype=np.float32).tolist()
+
+    # Define search parameters
+    search_params = {"metric_type": "L2", "params": {"nprobe": 10}}
+
+    # Perform the search
+    # print("Searching for:", query)
+    # Perform the search
+    # print("Searching for:", query)
+
+    results = collection.search(
+        data=[query_embedding],          # Query embedding
+        anns_field="embedding",          # Field to search
+        param=search_params,
+        limit=30,                         # Number of results
+        expr=None,                       # Optional filter
+        output_fields=["text_content", "url"]  # Specify fields to retrieve
     )
- 
-    # Prepare context chunks with sources
+    # Collect the context
     context_chunks = []
-    for result in results[0]:  # Iterate through the top results
-        # Access fields directly
+
+    # Display results
+    for i, result in enumerate(results[0]):
+        # print(f"Result {i+1}:")
         text_content = result.entity.get("text_content")
         url = result.entity.get("url")
-        similarity_score = 1 / (1 + result.distance)
+        if text_content:  # Ensure the content is valid
+            context_chunks.append(f"{text_content.strip()}\n(Source: {url})")
+        # print(f"Text: {text_content}")
+        # print(f"URL: {url}")
+        # print(f"Score: {result.distance}")
+        # print("-" * 40)
 
-        if not text_content or not url:
-            continue
+    # Create the context by concatenating the top results
+    context = " ".join(context_chunks[:30])
+    print(context,"Context")
+    return context
 
-        # Split text content into manageable chunks
-        text_splits = text_splitter.split_text(text_content)
+def extract_keywords_from_query(query, max_keywords=5):
+    """Extract keywords dynamically from the query."""
+    vectorizer = TfidfVectorizer(stop_words="english", max_features=max_keywords)
+    vectorizer.fit([query])  # Fit the vectorizer only on the query
+    keywords = vectorizer.get_feature_names_out()
+    return list(keywords)  # Ensure keywords are returned as a Python list
 
-        # Add each chunk with its associated URL
-        for split in text_splits:
-            context_chunks.append({"text_content": split, "url": url,"similarity_score": similarity_score})
+def compare_keywords_with_context(query, context, max_keywords=5):
+    """Extract keywords from query and compare them with the context."""
+    # Extract keywords from the query
+    keywords = extract_keywords_from_query(query, max_keywords=max_keywords)
 
-    # print("Retrieved Context Chunks:", context_chunks)
-    return context_chunks
+    # Compare keywords with the context
+    matched_keywords = [keyword for keyword in keywords if keyword.lower() in context.lower()]
 
-def extract_keywords(query, context):
-    """Extract keywords dynamically using TF-IDF."""
+    # Calculate the relevance score
+    relevance_score = len(matched_keywords) / len(keywords) if keywords else 0
+    return keywords, matched_keywords, relevance_score
 
-    vectorizer = TfidfVectorizer(stop_words="english", max_features=5)
-    vectorizer.fit([query, context])
-    return vectorizer.get_feature_names_out()
+def get_relevant_context(query):
+    """Retrieve relevant context and handle low relevance scores."""
+    context = search_milvus(query)
 
+    # Extract and compare keywords
+    keywords, matched_keywords, relevance_score = compare_keywords_with_context(query, context)
 
-def format_response_with_highlights(response, keywords, sources):
-    """Add sources to the response only if they are valid."""
-    if not sources or not response.strip():
-        # If no sources or response is empty, return response without sources
-        return response
+    print(f"Keywords: {keywords}")
+    print(f"Matched Keywords: {matched_keywords}")
+    print(f"Relevance Score: {relevance_score:.2f}")
 
-    # Add the first valid source to the response
-    response += f"\n\n<b>Sources:</b> <a href='{sources[0]}' target='_blank'>{sources[0]}</a>"
+    # Handle relevance score
+    if relevance_score <= 0.33:
+        context = (
+            "Sorry, I can’t help with that. I’m here to assist with CSE academic advising—"
+            "try asking about courses, schedules, or resources!"
+        )
+        sources = None  # No sources for low relevance
+    else:
+        # Extract all sources from the context
+        sources = []
+        for line in context.split("\n"):
+            if "(Source:" in line:
+                source = line.split("(Source:")[1].strip().rstrip(")")
+                sources.append(source)
+
+        # Join sources into a single string for further processing
+        sources = "\n".join(sources) if sources else None
+
+    return context, sources
+
+def generate_response_with_source(rag_chain, context_chunks, sources, query):
+    """
+    Generate the final response with the most repetitive source or fallback response.
+    """
+    # Normalize and count the occurrences of each source
+    if sources:
+        # Extract URLs from sources and normalize them
+        normalized_sources = []
+        for line in sources.split("\n"):
+            if "http" in line:
+                # Extract and normalize the URL
+                url = line.split()[0].rstrip(")")
+                parsed_url = urlparse(url)
+                normalized_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+                normalized_sources.append(normalized_url)
+
+        # Debugging: Check normalized sources
+        print("Normalized Sources:", normalized_sources)
+
+        # Count the occurrences of normalized sources
+        source_counts = Counter(normalized_sources)
+
+        # Debugging: Check source counts
+        print("Source Counts:", source_counts)
+
+        # Get the most repetitive source
+        most_repetitive_source = max(source_counts, key=source_counts.get)
+    else:
+        most_repetitive_source = None
+
+    # Handle the response based on the source and RAG chain output
+    if most_repetitive_source is None:
+        # Low relevance or no sources available
+        response = context_chunks  # Fallback response
+    else:
+        # Generate the response using the RAG chain
+        response = rag_chain.invoke({"context": context_chunks, "question": query})
+
+        # If the response indicates insufficient information, remove the source
+
+        # if "I don't have enough information to answer this question." in response:
+        #     response = f"{response.strip()}"
+
+        if response.strip().lower().startswith("i don't"):
+            response = f"{response.strip()}"
+            # most_repetitive_source = None  # Set source to None
+        else:
+            # Append the most repetitive source to the response
+            response = f"{response.strip()}\n\nSource:\n{most_repetitive_source.strip()}"
+
     return response
+
 def invoke_llm_for_response(query):
     try:
         """Generate a response with highlighted keywords and exclude sources if no information is provided."""
-        llm = ChatMistralAI(model='open-mistral-7b', api_key=os.getenv("API_KEY"))
-
+        llm = ChatMistralAI(model='open-mistral-7b', api_key=get_api_key)
         # Define the prompt template
         PROMPT_TEMPLATE = """
-        Based on the context: {context}\nAnswer the question: {question}. 
-        If you cannot answer the question, please just say: 
+        Based on the context: {context}\nAnswer the question: {question} keep it short and concise and only based on information provided in the context.
+        If you cannot answer the question, please just say:
         "I don't have enough information to answer this question."
+        "Dont make up any information you like, stick to the context, facts and statistics provided in the context"
         """
         prompt = PromptTemplate(
             input_variables=["context", "question"],
@@ -104,32 +193,13 @@ def invoke_llm_for_response(query):
             | StrOutputParser()
         )
 
-        # Generate embedding for the query
-        query_embedding = np.array(model.encode(query), dtype=np.float32).tolist()
+        context_chunks, source = get_relevant_context(query)
 
-        # Retrieve contexts with associated sources
-        collection = Collection("CSUSB_CSE_Data")
-        context_chunks = retrieve_context(query_embedding, collection)
+         # Generate the response with the most repetitive source
+        response = generate_response_with_source(rag_chain, context_chunks, source, query)
 
-        # Combine the most relevant chunk for the context
-        if context_chunks:
-            most_relevant_chunk = context_chunks[0]
-            context = most_relevant_chunk["text_content"]
-            sources = [most_relevant_chunk["url"]]
-        else:
-            context = "I don't have enough information to answer this question."
-            sources = []  # Ensure no sources are attached
-
-        # Generate the response using the retrieved context
-        response = rag_chain.invoke({"context": context, "question": query})
-
-        # Omit sources for fallback responses
-        if not context or "I don't have enough information" in response:
-            return format_response_with_highlights(response, [], [])
-
-        # Highlight keywords and format the response with sources if relevant
-        keywords = extract_keywords(query, response)
-        return format_response_with_highlights(response, keywords, sources)
+        print(response, "Response")
+        return response
 
     except httpx.HTTPStatusError as e:
         if e.response.status_code == 429:

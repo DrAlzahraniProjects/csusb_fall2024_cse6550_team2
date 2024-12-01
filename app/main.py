@@ -1,5 +1,5 @@
 # Imports
-from web_crawler import initialize_and_scrape
+from initialize_milvus import initialize_milvus_insert_data
 from utils import initialize_metrics_sidebar, initialize_session_state, is_rate_limited, update_metrics, reset_metrics, typing_title_animation, update_likes, update_dislikes, handle_feedback
 import streamlit as st
 import os
@@ -67,7 +67,7 @@ else:
                     # Run Milvus initialization in the first second
                     if remaining_time == initialization_time:
                         
-                        initialize_and_scrape()
+                        initialize_milvus_insert_data()
 
                     # Exit the loop if initialization completes early
                     if st.session_state.get('milvus_initialized', False):
