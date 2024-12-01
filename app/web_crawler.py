@@ -219,8 +219,6 @@ def scrape_internal_links(soup, base_url, visited):
 
     return internal_content
 
-data_source_1 = scrape_source_1(CORPUS_SOURCES[0])
-data_source_2 = scrape_navigation_section(CORPUS_SOURCES[1],ALLOWED_CATALOG_NAVIGATION_SECTIONS)
 
 def merge_data_sources(data_source_1, data_source_2):
     """
@@ -245,6 +243,13 @@ def merge_data_sources(data_source_1, data_source_2):
 
     return merged_data
 
+
+data_source_1 = scrape_source_1(CORPUS_SOURCES[0])
+data_source_2 = scrape_navigation_section(CORPUS_SOURCES[1],ALLOWED_CATALOG_NAVIGATION_SECTIONS)
+
+def merged_data():
+    return merge_data_sources(data_source_1, data_source_2)
+  
 # USE THIS FUNCTION TO SAVE THE SCRAPED DATA TO A JSON FILE
 
 # def save_to_json(file_name, data):

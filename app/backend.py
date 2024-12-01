@@ -174,13 +174,22 @@ def generate_response_with_source(rag_chain, context_chunks, sources, query):
 def invoke_llm_for_response(query):
     try:
         """Generate a response with highlighted keywords and exclude sources if no information is provided."""
-        llm = ChatMistralAI(model='open-mistral-7b', api_key=get_api_key)
+        llm = ChatMistralAI(model='open-mistral-7b', api_key=get_api_key())
         # Define the prompt template
         PROMPT_TEMPLATE = """
-        Based on the context: {context}\nAnswer the question: {question} keep it short and concise and only based on information provided in the context.
-        If you cannot answer the question, please just say:
-        "I don't have enough information to answer this question."
-        "Dont make up any information you like, stick to the context, facts and statistics provided in the context"
+        You are a helpful assistant tasked with answering questions based strictly on the provided context. Use only the information, facts, and statistics explicitly given in the context to formulate your response. Do not include any additional information or assumptions outside the context.
+        
+        Context:
+        {context}
+        
+        Question:
+        {question}
+        
+        Instructions:
+        - Provide a concise and accurate answer based solely on the context above.
+        - If the context does not contain enough information to answer the question, respond with:
+        "I don’t have enough information to answer this question."
+        - Do not generate, assume, or make up any details beyond the given context.
         """
         prompt = PromptTemplate(
             input_variables=["context", "question"],
