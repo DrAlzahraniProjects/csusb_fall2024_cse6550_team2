@@ -1,6 +1,7 @@
 import os
 import httpx
 import numpy as np
+import re
 from pymilvus import Collection
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
@@ -119,17 +120,67 @@ def get_relevant_context(query):
 
     return context, sources
 
+# def generate_response_with_source(rag_chain, context_chunks, sources, query):
+#     """
+#     Generate the final response with the very first source or fallback response,
+#     ensuring the response text does not include URLs and the source is shown separately.
+#     """
+#     # Initialize variables
+#     normalized_sources = []
+
+#     # Parse sources and extract URLs
+#     if sources:
+#         for line in sources.split("\n"):
+#             if "http" in line:
+#                 # Extract URL and clean it
+#                 url = line.split()[0].rstrip(")")
+#                 parsed_url = urlparse(url)
+#                 normalized_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+#                 normalized_sources.append(normalized_url)
+
+#         # Debugging: Check normalized sources
+#         print("Normalized Sources:", normalized_sources)
+
+#         # Get the very first source
+#         first_source = normalized_sources[0] if normalized_sources else None
+#     else:
+#         first_source = None
+
+#     # Handle the response based on the source and RAG chain output
+#     if first_source is None:
+#         # Low relevance or no sources available
+#         response = context_chunks  # Fallback response
+#     else:
+#         # Generate the response using the RAG chain
+#         response = rag_chain.invoke({"context": context_chunks, "question": query})
+
+#         # If the response indicates insufficient information, remove the source
+#         if response.strip().lower().startswith("i don't"):
+#             response = f"{response.strip()}"
+#             first_source = None  # Set source to None
+#         else:
+#             # Append the source to the response
+#             response = (
+#                 f"{response.strip()}\n\nSource:\n{first_source.strip()}"
+#             )
+
+#     return response
+
+# New function to generate response with source
+# For URL validation
 def generate_response_with_source(rag_chain, context_chunks, sources, query):
     """
-    Generate the final response with the most repetitive source or fallback response.
+    Generate the final response with the very first source or fallback response,
+    ensuring the response text does not include URLs and the source is shown separately.
     """
-    # Normalize and count the occurrences of each source
+    # Initialize variables
+    normalized_sources = []
+
+    # Parse sources and extract URLs
     if sources:
-        # Extract URLs from sources and normalize them
-        normalized_sources = []
         for line in sources.split("\n"):
             if "http" in line:
-                # Extract and normalize the URL
+                # Extract URL and clean it
                 url = line.split()[0].rstrip(")")
                 parsed_url = urlparse(url)
                 normalized_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
@@ -138,36 +189,36 @@ def generate_response_with_source(rag_chain, context_chunks, sources, query):
         # Debugging: Check normalized sources
         print("Normalized Sources:", normalized_sources)
 
-        # Count the occurrences of normalized sources
-        source_counts = Counter(normalized_sources)
-
-        # Debugging: Check source counts
-        print("Source Counts:", source_counts)
-
-        # Get the most repetitive source
-        most_repetitive_source = max(source_counts, key=source_counts.get)
+        # Get the very first source
+        first_source = normalized_sources[0] if normalized_sources else None
     else:
-        most_repetitive_source = None
+        first_source = None
 
     # Handle the response based on the source and RAG chain output
-    if most_repetitive_source is None:
+    if first_source is None:
         # Low relevance or no sources available
         response = context_chunks  # Fallback response
     else:
         # Generate the response using the RAG chain
         response = rag_chain.invoke({"context": context_chunks, "question": query})
 
+        # Check for URLs in the response text
+        urls_in_response = re.findall(r"http[s]?://\S+", response)
+
+        # If the response mentions URLs, remove them
+        if urls_in_response:
+            for url in urls_in_response:
+                response = response.replace(url, "").strip()
+
         # If the response indicates insufficient information, remove the source
-
-        # if "I don't have enough information to answer this question." in response:
-        #     response = f"{response.strip()}"
-
         if response.strip().lower().startswith("i don't"):
             response = f"{response.strip()}"
-            # most_repetitive_source = None  # Set source to None
+            first_source = None  # Set source to None
         else:
-            # Append the most repetitive source to the response
-            response = f"{response.strip()}\n\nSource:\n{most_repetitive_source.strip()}"
+            # Append the first source to the response
+            response = (
+                f"{response.strip()}\n\nSource:\n{first_source.strip()}"
+            )
 
     return response
 
