@@ -241,7 +241,7 @@ def update_metrics():
     """Updates metrics such as confusion matrix, accuracy, specificity, precision, recall, and sensitivity in the sidebar."""
     if st.session_state["y_true"] and st.session_state["y_pred"]:
         adjusted_y_true = st.session_state["y_true"][:len(st.session_state["y_pred"])]
-        cm = confusion_matrix(adjusted_y_true, st.session_state["y_pred"], labels=[0, 1])
+        cm = confusion_matrix(adjusted_y_true, st.session_state["y_pred"], labels=[1, 0])
         accuracy = accuracy_score(adjusted_y_true, st.session_state["y_pred"])
         precision = precision_score(adjusted_y_true, st.session_state["y_pred"], zero_division=0)
         recall = recall_score(adjusted_y_true, st.session_state["y_pred"], zero_division=0)
@@ -284,7 +284,7 @@ def update_metrics():
         #     pd.DataFrame(cm, columns=["Pred. Ans", "Pred. Unans"], index=["Actual Ans", "Actual Unans"])
         # )
         st.session_state["confusion_matrix_placeholder"].markdown(
-            pd.DataFrame(cm, columns=["Predicted -", "Predicted +"], index=["Actual -", "Actual +"])
+            pd.DataFrame(cm, columns=["Predicted +", "Predicted -"], index=["Actual +", "Actual -"])
             .to_html(classes="curved-table", escape=False),
             unsafe_allow_html=True
         )
@@ -321,13 +321,13 @@ def update_metrics():
         # )
         # Render the table
         cm_values = [
-            [f"{0} (TN)", f"{0} (FP)"],  # First row: Pred. Ans, Pred. Unans
-            [f"{0} (FN)", f"{0} (TP)"]   # Second row: Actual Ans, Actual Unans
+            [f"{0} (TP)", f"{0} (FN)"],  # First row: Pred. Ans, Pred. Unans
+            [f"{0} (FP)", f"{0} (TN)"]   # Second row: Actual Ans, Actual Unans
         ]
         conf_matrix_df = pd.DataFrame(
             cm_values, 
-            columns=["Predicted -", "Predicted +"], 
-            index=["Actual -", "Actual -"]
+            columns=["Predicted +", "Predicted -"], 
+            index=["Actual +", "Actual -"]
         )
         st.session_state["confusion_matrix_placeholder"].markdown(
             conf_matrix_df.to_html(classes="curved-table", escape=False),
@@ -336,7 +336,7 @@ def update_metrics():
         
         # st.session_state["confusion_matrix_placeholder"].markdown(
         #     pd.DataFrame(columns=["Pred. Unans", "Pred. Ans"], index=["Actual Unans", "Actual ans"])
-        #     .to_html(classes="curved-table", escape=False),
+        #     .to_html(classes="curved-stable", escape=False),
         #     unsafe_allow_html=True
         # )
         #st.session_state["confusion_matrix_placeholder"].write("Confusion Matrix: No data available.")
