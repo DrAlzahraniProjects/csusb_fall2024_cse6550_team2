@@ -114,6 +114,10 @@ def initialize_session_state():
 
     if 'title_placeholder' not in st.session_state:
         st.session_state['title_placeholder'] = st.empty()
+    for index, message in enumerate(st.session_state['messages']):
+        feedback_key = f"feedback_{index}"
+        if feedback_key not in st.session_state:
+            st.session_state[feedback_key] = None
 
 def typing_title_animation(title, delay=0.1):
     """Animates typing effect for a given title."""
@@ -125,18 +129,20 @@ def typing_title_animation(title, delay=0.1):
         time.sleep(delay)
     return title_placeholder
 
+
 def reset_metrics():
     """Resets all tracked metrics in session state."""
     # Reset engagement and response metrics
-    st.session_state['num_questions'] = 0
+    # st.session_state['num_questions'] = 0
     st.session_state['num_correct_answers'] = 0
     st.session_state['num_incorrect_answers'] = 0
     st.session_state['user_engagement'] = {'likes': 0, 'dislikes': 0}
-    st.session_state['rated_responses'] = {}
-    st.session_state["y_true"] = []
+    st.session_state['rated_responses'] = {i: None for i in range(len(st.session_state.get('messages', [])))}
+    # st.session_state["y_true"] = []
     st.session_state["y_pred"] = []
     st.session_state['total_response_time'] = 0
     
+   
     # Clear confusion matrix and performance metrics
     st.session_state["confusion_matrix_placeholder"].empty()
     st.session_state["accuracy_placeholder"].empty()
@@ -144,10 +150,18 @@ def reset_metrics():
     st.session_state["recall_placeholder"].empty()
     st.session_state["sensitivity_placeholder"].empty()
     st.session_state["specificity_placeholder"].empty()
-    
-    
-    # Optionally, you could call `update_metrics()` here if you want to immediately reset the values to zero in the sidebar
+    feedback_keys = [key for key in st.session_state.keys() if key.startswith("feedback_")]
+    for key in feedback_keys:
+        del st.session_state[key]
+    # Reset feedback keys
+    # reset_feedback_keys()
+    del st.session_state["reset_button_clicked"]
+    # # for debuging
+    # print("Rated Responses after reset:", st.session_state['rated_responses'])
+    # print("Feedback keys after reset:", [key for key in st.session_state.keys() if key.startswith("feedback_")])
+
     update_metrics()
+    
 
 def initialize_metrics_sidebar():
     """Initializes sidebar placeholders for metrics and confusion matrix in an expanded UI."""
@@ -229,10 +243,11 @@ def update_metrics():
     """,
     unsafe_allow_html=True
 )
+    # print('start update')
     """Updates metrics such as confusion matrix, accuracy, specificity, precision, recall, and sensitivity in the sidebar."""
     if st.session_state["y_true"] and st.session_state["y_pred"]:
         adjusted_y_true = st.session_state["y_true"][:len(st.session_state["y_pred"])]
-        cm = confusion_matrix(adjusted_y_true, st.session_state["y_pred"], labels=[0, 1])
+        cm = confusion_matrix(adjusted_y_true, st.session_state["y_pred"], labels=[1, 0])
         accuracy = accuracy_score(adjusted_y_true, st.session_state["y_pred"])
         precision = precision_score(adjusted_y_true, st.session_state["y_pred"], zero_division=0)
         recall = recall_score(adjusted_y_true, st.session_state["y_pred"], zero_division=0)
@@ -275,7 +290,7 @@ def update_metrics():
         #     pd.DataFrame(cm, columns=["Pred. Ans", "Pred. Unans"], index=["Actual Ans", "Actual Unans"])
         # )
         st.session_state["confusion_matrix_placeholder"].markdown(
-            pd.DataFrame(cm, columns=["Predicted -", "Predicted +"], index=["Actual -", "Actual +"])
+            pd.DataFrame(cm, columns=["Predicted +", "Predicted -"], index=["Actual +", "Actual -"])
             .to_html(classes="curved-table", escape=False),
             unsafe_allow_html=True
         )
@@ -299,6 +314,8 @@ def update_metrics():
             """,
             unsafe_allow_html=True
         )
+        # print("Updates metrics:data exist")
+
         # st.session_state["precision_placeholder"].write(f"Precision: {precision * 100:.2f}%")
         # st.session_state["recall_placeholder"].write(f"Recall: {recall * 100:.2f}%")
 
@@ -310,21 +327,22 @@ def update_metrics():
         # )
         # Render the table
         cm_values = [
-            [f"{0} (TN)", f"{0} (FP)"],  # First row: Pred. Ans, Pred. Unans
-            [f"{0} (FN)", f"{0} (TP)"]   # Second row: Actual Ans, Actual Unans
+            [f"{0} (TP)", f"{0} (FN)"],  # First row: Pred. Ans, Pred. Unans
+            [f"{0} (FP)", f"{0} (TN)"]   # Second row: Actual Ans, Actual Unans
         ]
         conf_matrix_df = pd.DataFrame(
             cm_values, 
-            columns=["Predicted -", "Predicted +"], 
-            index=["Actual -", "Actual -"]
+            columns=["Predicted +", "Predicted -"], 
+            index=["Actual +", "Actual -"]
         )
         st.session_state["confusion_matrix_placeholder"].markdown(
             conf_matrix_df.to_html(classes="curved-table", escape=False),
             unsafe_allow_html=True
         )
+        
         # st.session_state["confusion_matrix_placeholder"].markdown(
         #     pd.DataFrame(columns=["Pred. Unans", "Pred. Ans"], index=["Actual Unans", "Actual ans"])
-        #     .to_html(classes="curved-table", escape=False),
+        #     .to_html(classes="curved-stable", escape=False),
         #     unsafe_allow_html=True
         # )
         #st.session_state["confusion_matrix_placeholder"].write("Confusion Matrix: No data available.")
@@ -334,36 +352,49 @@ def update_metrics():
         st.session_state["recall_placeholder"].markdown("<div class='performance-box'>F1 Score: 0.0</div>", unsafe_allow_html=True)
         # st.session_state["precision_placeholder"].write("Precision: N/A")
         # st.session_state["recall_placeholder"].write("Recall: N/A")
+    #     print("Updates metrics:empty")
+
+    # print("Updates metrics:")
 
 def handle_feedback(index):
-    # Check the feedback value stored in session state for thumbs feedback
+    """Handles user feedback for a specific response."""
     feedback_value = st.session_state.get(f"feedback_{index}")
     print(f"Feedback received for response at index {index},{feedback_value}")
-    if feedback_value == 1:
-        update_likes(index)
-    elif feedback_value == 0:
-        update_dislikes(index)
+    if feedback_value is not None:  # Ensure feedback is not None
+        previous_rating = st.session_state['rated_responses'].get(index)
+        
+        if feedback_value == 1:  # Thumbs up
+            update_likes(index, previous_rating)
+        elif feedback_value == 0:  # Thumbs downhe
+            update_dislikes(index, previous_rating)
 
-def update_likes(index):
+
+def update_likes(index, previous_rating):
     """Updates metrics when a response is liked."""
-    previous_rating = st.session_state['rated_responses'].get(index)
-    if previous_rating != 'liked':
+    #for debuging
+    # print("UPDATE LIKE")
+    # print(previous_rating)
+    if previous_rating != 'liked':  # Avoid duplicate likes
         if previous_rating == 'disliked':
             st.session_state['num_incorrect_answers'] -= 1
-            st.session_state["y_pred"].remove(0)
+            st.session_state["y_pred"].remove(0)  # Remove dislike
+
         st.session_state['num_correct_answers'] += 1
         st.session_state['user_engagement']['likes'] += 1
         st.session_state['rated_responses'][index] = 'liked'
         st.session_state["y_pred"].append(1)
         update_metrics()
 
-def update_dislikes(index):
+def update_dislikes(index, previous_rating):
     """Updates metrics when a response is disliked."""
-    previous_rating = st.session_state['rated_responses'].get(index)
-    if previous_rating != 'disliked':
+    #for debuging
+    # print("UPDATE DISLIKE")
+    print(previous_rating)
+    if previous_rating != 'disliked':  # Avoid duplicate dislikes
         if previous_rating == 'liked':
             st.session_state['num_correct_answers'] -= 1
-            st.session_state["y_pred"].remove(1)
+            st.session_state["y_pred"].remove(1)  # Remove like
+
         st.session_state['num_incorrect_answers'] += 1
         st.session_state['user_engagement']['dislikes'] += 1
         st.session_state['rated_responses'][index] = 'disliked'
@@ -372,7 +403,7 @@ def update_dislikes(index):
 
 # Rate-limiting setup
 REQUEST_LOG = defaultdict(list)  # Tracks requests per IP
-MAX_REQUESTS = 15  # Max requests allowed
+MAX_REQUESTS = 15     # Max requests allowed
 WINDOW_SECONDS = 180  # Time window in seconds
 
 def is_rate_limited(ip, action_type="general"):
