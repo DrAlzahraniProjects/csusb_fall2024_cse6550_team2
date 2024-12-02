@@ -89,90 +89,92 @@ def compare_keywords_with_context(query, context, max_keywords=5):
     relevance_score = len(matched_keywords) / len(keywords) if keywords else 0
     return keywords, matched_keywords, relevance_score
 
-def get_relevant_context(query):
-    """Retrieve relevant context and handle low relevance scores."""
-    context = search_milvus(query)
+def handle_stopword_prompts(query):
+    """
+    Handle conversational prompts or queries with stop words
+    and return a predefined guidance response.
+    """
+    conversational_prompts = [
+        "hi", "hello", "what is your name", "who are you", 
+        "how are you", "what do you do", "what's your name"
+    ]
+    # Normalize the query for comparison
+    normalized_query = query.strip().lower()
 
-    # Extract and compare keywords
-    keywords, matched_keywords, relevance_score = compare_keywords_with_context(query, context)
-
-    print(f"Keywords: {keywords}")
-    print(f"Matched Keywords: {matched_keywords}")
-    print(f"Relevance Score: {relevance_score:.2f}")
-
-    # Handle relevance score
-    if relevance_score <= 0.33:
-        context = (
-            "Sorry, I can’t help with that. I’m here to assist with CSE academic advising—"
-            "try asking about courses, schedules, or resources!"
+    if any(prompt in normalized_query for prompt in conversational_prompts):
+        return (
+            "I am an academic advisor chatbot, designed to assist with CSE-related questions. "
+            "I am equipped with data from:\n"
+            "- CSE Website: https://www.csusb.edu/cse\n"
+            "- CSE Catalog: https://catalog.csusb.edu/colleges-schools-departments/natural-sciences/computer-science-engineering/"
         )
-        sources = None  # No sources for low relevance
-    else:
-        # Extract all sources from the context
-        sources = []
-        for line in context.split("\n"):
-            if "(Source:" in line:
-                source = line.split("(Source:")[1].strip().rstrip(")")
-                sources.append(source)
+    return None
 
-        # Join sources into a single string for further processing
-        sources = "\n".join(sources) if sources else None
+def get_relevant_context(query):
+    """
+    Retrieve relevant context and handle low relevance scores or unexpected errors gracefully.
+    """
+    try:
+        # Handle conversational prompts
+        guidance_response = handle_stopword_prompts(query)
+        if guidance_response:
+            return guidance_response, None  # Return guidance directly for stopword prompts
 
-    return context, sources
+        # Proceed with Milvus search if not a conversational prompt
+        context = search_milvus(query)
 
-# def generate_response_with_source(rag_chain, context_chunks, sources, query):
-#     """
-#     Generate the final response with the very first source or fallback response,
-#     ensuring the response text does not include URLs and the source is shown separately.
-#     """
-#     # Initialize variables
-#     normalized_sources = []
+        # Extract and compare keywords
+        keywords, matched_keywords, relevance_score = compare_keywords_with_context(query, context)
 
-#     # Parse sources and extract URLs
-#     if sources:
-#         for line in sources.split("\n"):
-#             if "http" in line:
-#                 # Extract URL and clean it
-#                 url = line.split()[0].rstrip(")")
-#                 parsed_url = urlparse(url)
-#                 normalized_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
-#                 normalized_sources.append(normalized_url)
+        print(f"Keywords: {keywords}")
+        print(f"Matched Keywords: {matched_keywords}")
+        print(f"Relevance Score: {relevance_score:.2f}")
 
-#         # Debugging: Check normalized sources
-#         print("Normalized Sources:", normalized_sources)
+        # Handle relevance score
+        if relevance_score <= 0.33:
+            context = (
+                "Sorry, I can’t help with that. I’m here to assist with CSE academic advising—"
+                "try asking about courses, schedules, or resources!"
+            )
+            sources = None  # No sources for low relevance
+        else:
+            # Extract all sources from the context
+            sources = []
+            for line in context.split("\n"):
+                if "(Source:" in line:
+                    source = line.split("(Source:")[1].strip().rstrip(")")
+                    sources.append(source)
 
-#         # Get the very first source
-#         first_source = normalized_sources[0] if normalized_sources else None
-#     else:
-#         first_source = None
+            # Join sources into a single string for further processing
+            sources = "\n".join(sources) if sources else None
 
-#     # Handle the response based on the source and RAG chain output
-#     if first_source is None:
-#         # Low relevance or no sources available
-#         response = context_chunks  # Fallback response
-#     else:
-#         # Generate the response using the RAG chain
-#         response = rag_chain.invoke({"context": context_chunks, "question": query})
+        return context, sources
 
-#         # If the response indicates insufficient information, remove the source
-#         if response.strip().lower().startswith("i don't"):
-#             response = f"{response.strip()}"
-#             first_source = None  # Set source to None
-#         else:
-#             # Append the source to the response
-#             response = (
-#                 f"{response.strip()}\n\nSource:\n{first_source.strip()}"
-#             )
+    except ValueError as e:
+        # Handle the empty vocabulary error gracefully
+        if "empty vocabulary" in str(e):
+            print(f"Encountered ValueError: {e}")
+            context = (
+                "I am an academic advisor chatbot, designed to assist with CSE-related questions. "
+                "I am equipped with data from:\n"
+                "- CSE Website: https://www.csusb.edu/cse\n"
+                "- CSE Catalog: https://catalog.csusb.edu/colleges-schools-departments/natural-sciences/computer-science-engineering/"
+            )
+            return context, None
 
-#     return response
+        # Reraise other unexpected errors
+        raise e
 
-# New function to generate response with source
-# For URL validation
 def generate_response_with_source(rag_chain, context_chunks, sources, query):
     """
     Generate the final response with the very first source or fallback response,
     ensuring the response text does not include URLs and the source is shown separately.
     """
+    # Handle guidance response directly
+    guidance_response = handle_stopword_prompts(query)
+    if guidance_response:
+        return guidance_response  # Return guidance for stopword prompts
+
     # Initialize variables
     normalized_sources = []
 
