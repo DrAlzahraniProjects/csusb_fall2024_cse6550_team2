@@ -114,6 +114,10 @@ def initialize_session_state():
 
     if 'title_placeholder' not in st.session_state:
         st.session_state['title_placeholder'] = st.empty()
+    for index, message in enumerate(st.session_state['messages']):
+        feedback_key = f"feedback_{index}"
+        if feedback_key not in st.session_state:
+            st.session_state[feedback_key] = None
 
 def typing_title_animation(title, delay=0.1):
     """Animates typing effect for a given title."""
@@ -146,7 +150,9 @@ def reset_metrics():
     st.session_state["recall_placeholder"].empty()
     st.session_state["sensitivity_placeholder"].empty()
     st.session_state["specificity_placeholder"].empty()
-    
+    feedback_keys = [key for key in st.session_state.keys() if key.startswith("feedback_")]
+    for key in feedback_keys:
+        del st.session_state[key]
     # Reset feedback keys
     # reset_feedback_keys()
     del st.session_state["reset_button_clicked"]
