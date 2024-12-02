@@ -33,5 +33,3 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ vars.DOCKERHUB_USERNAME }}/team2_app:latest
-          secrets: |
-            "MISTRAL_API_KEY=IetRnH5Lb578MdB5Ml0HNTdMBzeHUe7q"
