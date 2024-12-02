@@ -114,7 +114,6 @@ else:
                 st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
             else:
                 st.markdown(message['content'].get("response", ""),unsafe_allow_html=True)
-
                 # Use st.feedback with "thumbs" option for thumbs-up and thumbs-down feedback
                 st.feedback(
                     "thumbs",
@@ -129,8 +128,10 @@ else:
             # reset_metrics()
             st.session_state["reset_button_clicked"] = False  # Initialize state variable
 
-        if st.sidebar.button("Reset Metrics") or st.session_state["reset_button_clicked"]:
+        if st.sidebar.button("Reset Metrics"):
             reset_metrics()  # Reset all metrics and refresh the sidebar with zeroed values
+            # reset_feedback()
+            st.rerun()
             st.session_state["reset_button_clicked"] = True  # Mark the button as clicked
 
     else:
