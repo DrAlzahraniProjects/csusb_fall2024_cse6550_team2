@@ -11,6 +11,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from collections import Counter
 from urllib.parse import urlparse
+from nemo_guardrails import guard_rails
 
 # Initialize the embedding model
 model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
@@ -171,6 +172,7 @@ def generate_response_with_source(rag_chain, context_chunks, sources, query):
 
     return response
 
+
 def invoke_llm_for_response(query):
     try:
         """Generate a response with highlighted keywords and exclude sources if no information is provided."""
@@ -201,11 +203,12 @@ def invoke_llm_for_response(query):
             | llm
             | StrOutputParser()
         )
-
+        guard_rail_chain = guard_rails | rag_chain
+        
         context_chunks, source = get_relevant_context(query)
 
-         # Generate the response with the most repetitive source
-        response = generate_response_with_source(rag_chain, context_chunks, source, query)
+        # Generate the response with the most repetitive source
+        response = generate_response_with_source(guard_rail_chain, context_chunks, source, query)
 
         print(response, "Response")
         return response

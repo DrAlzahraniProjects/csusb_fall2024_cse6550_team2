@@ -1,0 +1,21 @@
+# config.yml
+models:
+  - type: mistral
+    engine: mistral
+    model: open-mistral-7b
+    config:
+      api_key: "${API_KEY}"
+      parameters:
+        system:
+        - Provide a concise and accurate answer based solely on the context above.
+        - If the context does not contain enough information to answer the question, respond with:"I don’t have enough information to answer this question."
+        - Do not generate, assume, or make up any details beyond the given context.
+
+rails:
+  # Input rails are invoked when new input from the user is received.
+  input:
+    flows:
+      - self_check_input
+prompts:
+  # Load prompts from a separate file
+  - file: prompts.yml
