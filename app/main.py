@@ -1,5 +1,5 @@
 # Imports
-from web_crawler import initialize_and_scrape
+from initialize_milvus import initialize_milvus_insert_data
 from utils import initialize_metrics_sidebar, initialize_session_state, is_rate_limited, update_metrics, reset_metrics, typing_title_animation, update_likes, update_dislikes, handle_feedback
 import streamlit as st
 import os
@@ -42,7 +42,7 @@ else:
             st.session_state['title_placeholder'] = typing_title_animation("Academic Advisor Chatbot", delay=0.1)
             st.session_state['title_animated'] = True
         else:
-            st.markdown(f"""<h2 style='text-align: center;' class="p">Academic Advisor Chatbot</h2>""", unsafe_allow_html=True)
+            st.markdown(f"""<h2 style='text-align: center;'>Academic Advisor Chatbot</h2>""", unsafe_allow_html=True)
 
         # Ensure `initialize_and_scrape()` runs only once
         if 'milvus_initialized' not in st.session_state:
@@ -67,7 +67,7 @@ else:
                     # Run Milvus initialization in the first second
                     if remaining_time == initialization_time:
                         
-                        initialize_and_scrape()
+                        initialize_milvus_insert_data()
 
                     # Exit the loop if initialization completes early
                     if st.session_state.get('milvus_initialized', False):
