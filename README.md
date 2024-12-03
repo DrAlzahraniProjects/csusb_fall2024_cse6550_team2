@@ -86,7 +86,7 @@ This section includes a set of questions that our chatbot can and cannot answer.
 
 | **Answerable Questions**                                         | **Unanswerable Questions**                               |
 |------------------------------------------------------------------|---------------------------------------------------------|
-| What are the programs available in CSE department?         | what is your name?             |
+| What is an advising appointment?          | what is your name?             |
 | How to make an advising appointment?                        | How to book a study room in library?                    |
 | What certificate programs are available?       | Where is starbucks on campus?                          |
 | How to transfer program credits?                          | What is the procedure to join the hiking club?                 |
@@ -94,7 +94,7 @@ This section includes a set of questions that our chatbot can and cannot answer.
 | Is there lab facility in CSE department?            | How can I apply for a scholarship in the Biology department?               |
 | Who is Dr. Alzahrani?                   | What is famous food shop in CSUSB?                  |
 | What is Departmental Honors?                                  | How do I report a lost item on campus?                                           |
-| What is an advising appointment?                                  | Why sky is blue?                     |
+| What are the programs available in CSE department?                                  | Why sky is blue?                     |
 | How do I access the university's online learning portal?                       | Where is the gym located?                               |
 | What are the core subjects for CSE department?                             | What are the timings for Tennis club?
 ---
