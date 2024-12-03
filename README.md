@@ -86,17 +86,17 @@ This section includes a set of questions that our chatbot can and cannot answer.
 
 | **Answerable Questions**                                         | **Unanswerable Questions**                               |
 |------------------------------------------------------------------|---------------------------------------------------------|
-| Give me the contact information for the CSE department.          | Do you know where the HR office is located?             |
-| What certificate programs are available?                         | How can I use the weblogon service?                     |
-| Provide a list of faculty and staff in the CSE department.        | Who is the captain of baseball team CSUSB?                          |
-| How can I make an advising appointment?                          | Tell me about the Sociology department?                 |
-| How can I check my class schedule?                               | Can you name the public administration faculty members? |
-| What courses are offered for undergraduate students?             | What are the Art and Letter perspectives?               |
-| What are the student internship opportunities?                   | Is IST a course in the CSE department?                  |
-| How do I get remote lab access?                                  | What is ATI?                                            |
-| How can I join the CSE club?                                     | Where are the CSU FILA awards held?                     |
-| How do I install VMware Horizon Client?                         | Where is the gym located?                               |
-| Tell me the name of the director?                               | What are the timings for Tennis club?
+| Who is chair/director?          | what is your name?             |
+| How to make an advising appointment?                        | How to book a study room in library?                    |
+| What certificate programs are available?       | Where is starbucks on campus?                          |
+| How to transfer program credits?                          | What is the procedure to join the hiking club?                 |
+| How to apply for research?                        | What courses are offered in the Art department? |
+| Is there lab facility in CSE department?            | How can I apply for a scholarship in the Biology department?               |
+| Who is Dr. Alzahrani?                   | What is famous food shop in CSUSB?                  |
+| What is Departmental Honors?                                  | How do I report a lost item on campus?                                           |
+| What is an advising appointment?                                  | Why sky is blue?                     |
+| How do I access the university's online learning portal?                       | Where is the gym located?                               |
+| What are the core subjects for CSE department?                             | What are the timings for Tennis club?
 ---
 
 ## Troubleshooting
