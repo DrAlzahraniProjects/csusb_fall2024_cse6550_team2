@@ -86,7 +86,7 @@ This section includes a set of questions that our chatbot can and cannot answer.
 
 | **Answerable Questions**                                         | **Unanswerable Questions**                               |
 |------------------------------------------------------------------|---------------------------------------------------------|
-| Who is chair/director?          | what is your name?             |
+| What are the programs available in CSE department?         | what is your name?             |
 | How to make an advising appointment?                        | How to book a study room in library?                    |
 | What certificate programs are available?       | Where is starbucks on campus?                          |
 | How to transfer program credits?                          | What is the procedure to join the hiking club?                 |
