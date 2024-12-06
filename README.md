@@ -48,8 +48,13 @@ Ensure your local repository is up-to-date by running the below command:
 ```
 git pull origin main
 ```
+#### Step 4 : Run the Setup Script:
+```
+python setup.py
+```
 
-#### Step 4: Build and Run the Docker Image
+
+#### Step 5: Build and Run the Docker Image
 
 Make sure Docker is installed and running on your local machine. Build the Docker image by using the following command:
 
