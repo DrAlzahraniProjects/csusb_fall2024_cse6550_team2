@@ -46,7 +46,7 @@ def search_milvus(query):
         data=[query_embedding],          # Query embedding
         anns_field="embedding",          # Field to search
         param=search_params,
-        limit=30,                         # Number of results
+        limit=50,                         # Number of results
         expr=None,                       # Optional filter
         output_fields=["text_content", "url"]  # Specify fields to retrieve
     )
