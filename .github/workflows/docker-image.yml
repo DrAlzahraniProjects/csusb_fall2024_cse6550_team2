@@ -1,73 +1,68 @@
-name: Docker Image CI
+name: Docker Build and Test
 
 on:
   push:
-    branches: [ "main" ]
-
-permissions:
-  contents: read
-  packages: write
+    branches:
+      - main  # Trigger this workflow on push to the 'main' branch
+  pull_request:
+    branches:
+      - main  # Trigger on pull requests targeting the 'main' branch
 
 jobs:
-  build-and-push:
-    runs-on: ubuntu-latest  
+  build:
+    runs-on: ubuntu-latest  # Use the latest Ubuntu runner for the CI job
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    
+    # Checkout the repository
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Set up Docker Buildx (for multi-platform builds, if required)
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v2
 
-    # Log in to both GitHub Container Registry (GHCR) and Docker Hub
-    - name: Log in to GitHub Container Registry
-      uses: docker/login-action@v3
+    # Log in to Docker Hub (if you're pushing to Docker Hub)
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
       with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v3
+    # Build the Docker image
+    - name: Build Docker image
+      run: |
+        docker build -t team2_app .
+
+    # Run the Docker container with the Mistral API key passed as an argument
+    - name: Run Docker container with Mistral API key
+      run: |
+        mistral_key="${{ secrets.MISTRAL_API_KEY }}"
+        docker run -d -p 5002:5002 -p 6002:6002 -e API_KEY=$mistral_key team2_app
+        sleep 10  # Allow time for the container to start
+
+    # Check if the app is running (you can adjust this test to your app's specifics)
+    - name: Test if the app is running
+      run: |
+        curl --fail http://localhost:5002/team2 || exit 1  # Check if app responds
+
+    # Optionally, stop and remove the container after testing
+    - name: Clean up Docker container
+      run: |
+        docker ps -q -f "name=team2_app" | xargs docker stop | xargs docker rm
+
+  # Optionally, push the Docker image to a registry (e.g., Docker Hub or GitHub Container Registry)
+  push:
+    needs: build  # Ensure this job runs only after the build job has succeeded
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
       with:
-        registry: docker.io
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Lowercase the repo name
-      run: echo "REPO=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
-
-    - name: Create .env file with API keys
+    - name: Push Docker image to Docker Hub
       run: |
-        echo "MISTRAL_API_KEY=${{ secrets.API_KEY }}" > .env
-        echo "HF_TOKEN=${{ secrets.HF_TOKEN }}" >> .env  # Add Hugging Face token here
-
-    - name: Install Mambaforge
-      run: |
-        wget -q "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh" -O mambaforge.sh
-        bash mambaforge.sh -b -p $HOME/mambaforge
-        echo "$HOME/mambaforge/bin" >> $GITHUB_PATH
-
-    - name: Create Mamba environment
-      run: |
-        source $HOME/mambaforge/bin/activate
-        mamba init bash
-        mamba create -n team3_env python=3.10 -y
-        mamba install --yes --file requirements.txt
-      shell: bash
-
-    # Build and push Docker images to both GHCR and Docker Hub
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        platforms: linux/amd64,linux/arm64
-        tags: |
-          ghcr.io/${{ env.REPO }}/team3-app:latest
-          docker.io/${{ secrets.DOCKERHUB_USERNAME }}/team3-app:latest  
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-
-    - name: Image digest
-      run: echo ${{ steps.docker_build.outputs.digest }}
+        docker tag team2_app ${{ secrets.DOCKER_USERNAME }}/team2_app:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/team2_app:latest
