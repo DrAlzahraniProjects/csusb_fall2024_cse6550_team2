@@ -49,10 +49,16 @@ Ensure your local repository is up-to-date by running the below command:
 git pull origin main
 ```
 #### Step 4 : Run the Setup Script:
+
+Make sure Docker is installed and running on your local machine. Use below command to run the Setup Script which builds docker image.
+
 ```
 python setup.py
 ```
+Get "MISTRAL_API_KEY" from [Team2 Discussions Board](https://csusb.instructure.com/courses/43192/discussion_topics/419700) and paste it on terminal when asked.
 
+
+If **Step 4** does not work for you use **Step 5** as an alternative to build docker image.
 
 #### Step 5: Build and Run the Docker Image
 
