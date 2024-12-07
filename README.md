@@ -52,6 +52,10 @@ git pull origin main
 ```
 python setup.py
 ```
+Get "MISTRAL_API_KEY" from [Team2 Discussions Board](https://csusb.instructure.com/courses/43192/discussion_topics/419700) and paste on terminal when asked.
+
+
+If **Step 4** does not work for you use **Step 5** as an alternative to build docker image.
 
 
 #### Step 5: Build and Run the Docker Image
